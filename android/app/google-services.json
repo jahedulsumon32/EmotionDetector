@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "362524188595",
+    "project_id": "emotiondetector-92a99",
+    "storage_bucket": "emotiondetector-92a99.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:362524188595:android:5fc5b4d4ac952d990875c6",
+        "android_client_info": {
+          "package_name": "com.emotiondetector"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANePSY1bbTflmKnE8xJnBY1uoODVNzlo0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
