@@ -12,7 +12,20 @@
           "package_name": "com.emotiondetector"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "362524188595-2hvb38bmf50mfpdb4gv0it3auvk4g0ir.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.emotiondetector",
+            "certificate_hash": "8d12fd399022008e73d88361bfe9e70eb5e58ee5"
+          }
+        },
+        {
+          "client_id": "362524188595-nnkdpavd0vauhbde8ijrvt6optr1u1fs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyANePSY1bbTflmKnE8xJnBY1uoODVNzlo0"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "362524188595-nnkdpavd0vauhbde8ijrvt6optr1u1fs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
