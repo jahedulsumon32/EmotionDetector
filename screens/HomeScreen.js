@@ -18,6 +18,8 @@ import firestore from '@react-native-firebase/firestore';
 
 import {Container} from '../styles/FeedStyles';
 
+import {useFocusEffect} from '@react-navigation/native'; // Import useFocusEffect hook
+
 const Posts = [
   {
     id: '1',
@@ -126,6 +128,13 @@ const HomeScreen = () => {
   useEffect(() => {
     fetchPosts();
   }, []);
+
+  // Use useFocusEffect to refetch posts when the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchPosts();
+    }, []),
+  );
 
   useEffect(() => {
     fetchPosts();
