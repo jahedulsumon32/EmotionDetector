@@ -6,6 +6,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 import HomeScreen from '../screens/HomeScreen';
 import ChatScreen from '../screens/ChatScreen';
@@ -18,7 +19,7 @@ const Tab = createBottomTabNavigator();
 const FeedStack = ({navigation}) => (
   <Stack.Navigator>
     <Stack.Screen
-      name="RN Social"
+      name="Social App with Emotion Detection"
       component={HomeScreen}
       options={{
         headerTitleAlign: 'center',
@@ -33,8 +34,8 @@ const FeedStack = ({navigation}) => (
         },
         headerRight: () => (
           <View style={{marginRight: 10}}>
-            <FontAwesome5.Button
-              name="plus"
+            <AntDesign.Button
+              name="addfile"
               size={22}
               backgroundColor="#fff"
               color="#2e64e5"
