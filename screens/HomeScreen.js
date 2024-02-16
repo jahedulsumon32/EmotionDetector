@@ -80,7 +80,7 @@ const Posts = [
   },
 ];
 
-const HomeScreen = () => {
+const HomeScreen = ({navigation}) => {
   const [posts, setPosts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deleted, setDeleted] = useState(false);
@@ -265,7 +265,13 @@ const HomeScreen = () => {
           <FlatList
             data={posts}
             renderItem={({item}) => (
-              <PostCard item={item} onDelete={handleDelete} />
+              <PostCard
+                item={item}
+                onDelete={handleDelete}
+                onPress={() =>
+                  navigation.navigate('HomeProfile', {userId: item.userId})
+                }
+              />
             )}
             keyExtractor={item => item.id}
             ListHeaderComponent={ListHeader}
