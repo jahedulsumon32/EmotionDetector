@@ -16,7 +16,7 @@ import {AuthContext} from '../navigation/AuthProvider';
 const LoginScreen = ({navigation}) => {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
-  const {login, googleLogin} = useContext(AuthContext);
+  const {login, googleLogin, phoneLogin} = useContext(AuthContext);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -58,6 +58,13 @@ const LoginScreen = ({navigation}) => {
             color="#de4d41"
             backgroundColor="#f5e7ea"
             onPress={() => googleLogin()}
+          />
+          <SocialButton
+            buttonTitle="Sign In with Phone"
+            btnType="phone"
+            color="#de4d41"
+            backgroundColor="#f5e7ea"
+            onPress={() => navigation.navigate('PhoneLogin')}
           />
         </View>
       ) : null}

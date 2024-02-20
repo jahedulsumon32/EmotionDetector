@@ -90,7 +90,6 @@ const PostCard = ({item, onDelete, onPress}) => {
           </UserInfoText>
         </UserInfo>
         <PostText>{item.post}</PostText>
-        {/* {item.postImg != null ? <PostImg source={{uri: item.postImg}} /> : <Divider />} */}
         {item.postImg != null ? (
           <ProgressiveImage
             defaultImageSource={require('../assets/default-img.jpg')}

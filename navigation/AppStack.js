@@ -20,7 +20,7 @@ const Tab = createBottomTabNavigator();
 const FeedStack = ({navigation}) => (
   <Stack.Navigator>
     <Stack.Screen
-      name="Social App with Emotion Detection"
+      name="Social App with Emotion Detector"
       component={HomeScreen}
       options={{
         headerTitleAlign: 'center',
@@ -34,7 +34,7 @@ const FeedStack = ({navigation}) => (
           elevation: 0,
         },
         headerRight: () => (
-          <View style={{marginRight: 10}}>
+          <View style={{marginRight: -15}}>
             <AntDesign.Button
               name="addfile"
               size={22}
@@ -143,7 +143,7 @@ const AppStack = () => {
         name="Messages"
         component={ChatScreen}
         options={{
-          // tabBarLabel: 'Home',
+          tabBarLabel: 'Emotion Detector',
           tabBarIcon: ({color, size}) => (
             <Ionicons
               name="chatbox-ellipses-outline"
