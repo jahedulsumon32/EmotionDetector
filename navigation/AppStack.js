@@ -4,12 +4,15 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
 import HomeScreen from '../screens/HomeScreen';
 import ChatScreen from '../screens/ChatScreen';
+import MapScreen from '../screens/MapScreen';
+import ReviewScreen from '../screens/ReviewScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import AddPostScreen from '../screens/AddPostScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
@@ -140,10 +143,25 @@ const AppStack = () => {
         }}
       />
       <Tab.Screen
-        name="Messages"
+        name="Detect Emotion From Text"
         component={ChatScreen}
         options={{
-          tabBarLabel: 'Emotion Detector',
+          tabBarLabel: 'Detector',
+          tabBarIcon: ({color, size}) => (
+            <MaterialCommunityIcons
+              name="smoke-detector-outline"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Review This App"
+        component={ReviewScreen}
+        options={{
+          tabBarLabel: 'Review',
           tabBarIcon: ({color, size}) => (
             <Ionicons
               name="chatbox-ellipses-outline"
@@ -153,8 +171,20 @@ const AppStack = () => {
           ),
         }}
       />
+
       <Tab.Screen
-        name="ProfileTab"
+        name="Map"
+        component={MapScreen}
+        options={{
+          tabBarLabel: 'Map',
+          tabBarIcon: ({color, size}) => (
+            <Feather name="map-pin" color={color} size={size} />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Profile"
         component={ProfileStack}
         options={{
           // tabBarLabel: 'Home',

@@ -1,5 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import ProgressiveImage from './ProgressiveImage';
 
 import {
@@ -33,6 +35,8 @@ const PostCard = ({item, onDelete, onPress}) => {
 
   likeIcon = item.liked ? 'heart' : 'heart-outline';
   likeIconColor = item.liked ? '#2e64e5' : '#333';
+  dislikeText = 'Dislike';
+  emotion = 'Emotion';
 
   if (item.likes == 1) {
     likeText = '1 Like';
@@ -102,17 +106,33 @@ const PostCard = ({item, onDelete, onPress}) => {
         )}
 
         <InteractionWrapper>
+          {/* like button */}
           <Interaction active={item.liked}>
-            <Ionicons name={likeIcon} size={25} color={likeIconColor} />
+            <Ionicons name={likeIcon} size={20} color={likeIconColor} />
             <InteractionText active={item.liked}>{likeText}</InteractionText>
           </Interaction>
+          {/* Dislike button */}
           <Interaction>
-            <Ionicons name="chatbubble-outline" size={25} />
+            <SimpleLineIcons name="dislike" size={20} />
+            <InteractionText>{dislikeText}</InteractionText>
+          </Interaction>
+
+          {/* Comment button */}
+          <Interaction>
+            <Ionicons name="chatbubble-outline" size={20} />
             <InteractionText>{commentText}</InteractionText>
           </Interaction>
+
+          {/* Emtion Button */}
+          <Interaction>
+            <MaterialIcons name="insert-emoticon" size={20} />
+            <InteractionText>{emotion}</InteractionText>
+          </Interaction>
+
+          {/* Delete button */}
           {user.uid == item.userId ? (
             <Interaction onPress={() => onDelete(item.id)}>
-              <Ionicons name="trash-bin" size={25} />
+              <Ionicons name="trash-bin" size={20} />
             </Interaction>
           ) : null}
         </InteractionWrapper>

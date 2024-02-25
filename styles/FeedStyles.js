@@ -9,7 +9,7 @@ export const Container = styled.View`
 
 export const Card = styled.View`
   background-color: #f8f8f8;
-  width: 350px;
+  width: 320px;
   margin-bottom: 20px;
   border-radius: 10px;
 `;
@@ -76,9 +76,10 @@ export const InteractionWrapper = styled.View`
 
 export const Interaction = styled.TouchableOpacity`
   flex-direction: row;
-  justify-content: center;
+  justify-content: space-between;
   border-radius: 5px;
-  padding: 2px 5px;
+
+  padding: 10px 10px;
   background-color: ${props => (props.active ? '#2e64e515' : 'transparent')};
 `;
 
@@ -86,7 +87,8 @@ export const InteractionText = styled.Text`
   font-size: 12px;
   font-family: 'Lato-Regular';
   font-weight: bold;
+  justify-content: space-between;
   color: ${props => (props.active ? '#2e64e5' : '#333')};
   margin-top: 5px;
-  margin-left: 5px;
+  margin-left: 1px;
 `;
