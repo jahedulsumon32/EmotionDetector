@@ -28,8 +28,9 @@ import {
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 import firestore from '@react-native-firebase/firestore';
+import {Alert} from 'react-native';
 
-const PostCard = ({item, onDelete, onPress}) => {
+const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
   const {user, logout} = useContext(AuthContext);
   const [userData, setUserData] = useState(null);
 
@@ -71,6 +72,21 @@ const PostCard = ({item, onDelete, onPress}) => {
     getUser();
   }, []);
 
+  const handleLike = () => {
+    Alert.alert('Liked is clicked');
+  };
+
+  const handleDisLike = () => {
+    Alert.alert('DisLiked is clicked');
+  };
+
+  const handleComment = () => {
+    Alert.alert('Comment is clicked');
+  };
+
+  const handleEmotion = () => {
+    Alert.alert('This button add a tag to the post according to the emotion');
+  };
   return (
     <GestureHandlerRootView>
       <Card key={item.id}>
@@ -107,30 +123,30 @@ const PostCard = ({item, onDelete, onPress}) => {
 
         <InteractionWrapper>
           {/* like button */}
-          <Interaction active={item.liked}>
+          <Interaction active={item.liked} onPress={handleLike}>
             <Ionicons name={likeIcon} size={20} color={likeIconColor} />
             <InteractionText active={item.liked}>{likeText}</InteractionText>
           </Interaction>
           {/* Dislike button */}
-          <Interaction>
+          <Interaction onPress={handleDisLike}>
             <SimpleLineIcons name="dislike" size={20} />
             <InteractionText>{dislikeText}</InteractionText>
           </Interaction>
 
           {/* Comment button */}
-          <Interaction>
+          <Interaction onPress={handleComment}>
             <Ionicons name="chatbubble-outline" size={20} />
             <InteractionText>{commentText}</InteractionText>
           </Interaction>
 
           {/* Emtion Button */}
-          <Interaction>
+          <Interaction onPress={handleEmotion}>
             <MaterialIcons name="insert-emoticon" size={20} />
             <InteractionText>{emotion}</InteractionText>
           </Interaction>
 
           {/* Delete button */}
-          {user.uid == item.userId ? (
+          {showDeleteButton && user.uid == item.userId ? (
             <Interaction onPress={() => onDelete(item.id)}>
               <Ionicons name="trash-bin" size={20} />
             </Interaction>

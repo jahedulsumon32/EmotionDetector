@@ -23,7 +23,7 @@ const Tab = createBottomTabNavigator();
 const FeedStack = ({navigation}) => (
   <Stack.Navigator>
     <Stack.Screen
-      name="Social App with Emotion Detector"
+      name="Write New Post->"
       component={HomeScreen}
       options={{
         headerTitleAlign: 'center',
@@ -32,6 +32,7 @@ const FeedStack = ({navigation}) => (
           fontFamily: 'Kufam-SemiBoldItalic',
           fontSize: 18,
         },
+
         headerStyle: {
           shadowColor: '#fff',
           elevation: 0,
