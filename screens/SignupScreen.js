@@ -4,13 +4,53 @@ import FormInput from '../components/FormInput';
 import FormButton from '../components/FormButton';
 import SocialButton from '../components/SocialButton';
 import {AuthContext} from '../navigation/AuthProvider';
+import {Alert} from 'react-native';
 
 const SignupScreen = ({navigation}) => {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const [confirmPassword, setConfirmPassword] = useState();
+  const [isValidEmail, setIsValidEmail] = useState(true); // State to track email validity
+  const [isValidPassword, setIsValidPassword] = useState(true); // State to track password validity
 
   const {register} = useContext(AuthContext);
+
+  // Function to validate email using regex
+  const validateEmail = email => {
+    const regex = /\S+@\S+\.\S+/;
+    return regex.test(email);
+  };
+
+  const validatePassword = password => {
+    if (!password || password.length <= 0) {
+      return false;
+    }
+    return true;
+  };
+
+  const handleRegister = () => {
+    // Check if email is valid before attempting login
+    if (!validateEmail(email)) {
+      setIsValidEmail(false);
+      Alert.alert(
+        'Unvalid Email. Please try again with correct amail address.',
+      );
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      setIsValidPassword(false);
+      Alert.alert('Password cannot be empty');
+      return;
+    }
+    setIsValidPassword(true);
+    setIsValidEmail(true);
+    if (confirmPassword !== password) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+    register(email, password);
+  };
 
   return (
     <View style={styles.container}>
@@ -28,7 +68,10 @@ const SignupScreen = ({navigation}) => {
 
       <FormInput
         labelValue={password}
-        onChangeText={userPassword => setPassword(userPassword)}
+        onChangeText={userPassword => {
+          setPassword(userPassword);
+          setIsValidPassword(validatePassword(password));
+        }}
         placeholderText="Password"
         iconType="lock"
         secureTextEntry={true}
@@ -36,16 +79,16 @@ const SignupScreen = ({navigation}) => {
 
       <FormInput
         labelValue={confirmPassword}
-        onChangeText={userPassword => setConfirmPassword(userPassword)}
+        onChangeText={userPassword => {
+          setConfirmPassword(userPassword);
+          setIsValidPassword(validatePassword(password));
+        }}
         placeholderText="Confirm Password"
         iconType="lock"
         secureTextEntry={true}
       />
 
-      <FormButton
-        buttonTitle="Sign Up"
-        onPress={() => register(email, password)}
-      />
+      <FormButton buttonTitle="Sign Up" onPress={() => handleRegister()} />
 
       <View style={styles.textPrivate}>
         <Text style={styles.color_textPrivate}>

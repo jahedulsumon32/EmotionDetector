@@ -2,6 +2,7 @@ import React, {createContext, useState} from 'react';
 import auth from '@react-native-firebase/auth';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import firestore from '@react-native-firebase/firestore';
+import {Alert} from 'react-native';
 
 export const AuthContext = createContext();
 
@@ -17,6 +18,7 @@ export const AuthProvider = ({children}) => {
           try {
             await auth().signInWithEmailAndPassword(email, password);
           } catch (e) {
+            Alert.alert('Please Insert Correct Email and Password');
             console.log(e);
           }
         },
@@ -87,6 +89,22 @@ export const AuthProvider = ({children}) => {
               })
               //we need to catch the whole sign up process if it fails too.
               .catch(error => {
+                if (error.code === 'auth/email-already-in-use') {
+                  // Show an alert to the user if the email is already in use
+                  Alert.alert(
+                    'Error',
+                    'The email address is already in use by another account.',
+                  );
+                } else if (error.code === 'auth/weak-password') {
+                  // Show an alert to the user if the password is too weak
+                  Alert.alert(
+                    'Error',
+                    'The password is invalid. Password should be at least 6 characters.',
+                  );
+                } else {
+                  // Show a generic error alert for other errors
+                  Alert.alert('Error', 'Something went wrong with sign up.');
+                }
                 console.log('Something went wrong with sign up: ', error);
               });
           } catch (e) {

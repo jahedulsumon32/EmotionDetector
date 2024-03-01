@@ -11,6 +11,10 @@ export default function PhoneLoginScreen() {
 
   const sendOtp = async () => {
     try {
+      if (mobileNo.length !== 11) {
+        Alert.alert('Mobile number must be 11 digits long.');
+        return;
+      }
       console.log('Button is clicked');
       const mobile = '+88' + mobileNo;
       console.log(mobile);
@@ -43,6 +47,7 @@ export default function PhoneLoginScreen() {
           <TextInput
             style={{borderWidth: 2, width: '80%', marginBottom: 5}}
             placeholder="Enter Your Mobile Number"
+            keyboardType="number-pad"
             onChangeText={value => setMobileNo(value)}
           />
           <Button title="Send Otp" onPress={sendOtp} />
@@ -54,6 +59,7 @@ export default function PhoneLoginScreen() {
               marginTop: 30,
             }}
             placeholder="Enter Your OTP"
+            keyboardType="number-pad"
             onChangeText={value => setOtpInput(value)}
           />
           <Button title="Submit" onPress={submitOtp} />
