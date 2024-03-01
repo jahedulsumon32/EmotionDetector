@@ -6,8 +6,8 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
-import ActionButton from 'react-native-action-button';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
 import storage from '@react-native-firebase/storage';
@@ -158,20 +158,20 @@ const AddPostScreen = () => {
           </SubmitBtn>
         )}
       </InputWrapper>
-      <ActionButton buttonColor="#2e64e5">
-        <ActionButton.Item
-          buttonColor="#9b59b6"
-          title="Take Photo"
+      <View style={styles.actionButtonContainer}>
+        <TouchableOpacity // Replaced ActionButton with TouchableOpacity
+          style={[styles.actionButton, {backgroundColor: '#9b59b6'}]}
           onPress={takePhotoFromCamera}>
           <Icon name="camera-outline" style={styles.actionButtonIcon} />
-        </ActionButton.Item>
-        <ActionButton.Item
-          buttonColor="#3498db"
-          title="Choose Photo"
+          <Text style={styles.actionButtonText}>Take Photo</Text>
+        </TouchableOpacity>
+        <TouchableOpacity // Replaced ActionButton with TouchableOpacity
+          style={[styles.actionButton, {backgroundColor: '#3498db'}]}
           onPress={choosePhotoFromLibrary}>
           <Icon name="images-outline" style={styles.actionButtonIcon} />
-        </ActionButton.Item>
-      </ActionButton>
+          <Text style={styles.actionButtonText}>Choose Photo</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -183,6 +183,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  actionButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 20,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  actionButtonText: {
+    color: 'white',
+    marginLeft: 10,
   },
   actionButtonIcon: {
     fontSize: 20,
