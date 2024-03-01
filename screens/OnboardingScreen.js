@@ -50,21 +50,21 @@ const OnboardingScreen = ({navigation}) => {
       pages={[
         {
           backgroundColor: '#a6e4d0',
-          image: <Image source={require('../assets/onboarding-img1.png')} />,
-          title: 'Connect to the World',
-          subtitle: 'A New Way To Connect With The World',
+          image: <Image source={require('../assets/b1.png')} />,
+          title: 'Welcome',
+          subtitle: 'Social App With Emotion Detector',
         },
         {
           backgroundColor: '#fdeb93',
-          image: <Image source={require('../assets/onboarding-img2.png')} />,
-          title: 'Share Your Favorites',
-          subtitle: 'Share Your Thoughts With Similar Kind of People',
+          image: <Image source={require('../assets/b2.png')} />,
+          title: 'Share Your Thoughts',
+          subtitle: 'Share Your Fellings via Post',
         },
         {
           backgroundColor: '#e9bcbe',
-          image: <Image source={require('../assets/onboarding-img3.png')} />,
-          title: 'Become The Star',
-          subtitle: 'Let The Spot Light Capture You',
+          image: <Image source={require('../assets/b3.png')} />,
+          title: 'Detect The Emotion of Post',
+          subtitle: ' And Understand The Post Context More Clearly',
         },
       ]}
     />
