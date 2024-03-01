@@ -30,7 +30,7 @@ const FeedStack = ({navigation}) => (
         headerTitleStyle: {
           color: '#2e64e5',
           fontFamily: 'Kufam-SemiBoldItalic',
-          fontSize: 18,
+          fontSize: 20,
         },
 
         headerStyle: {

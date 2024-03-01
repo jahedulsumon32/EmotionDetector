@@ -158,7 +158,7 @@ const AddPostScreen = () => {
           </SubmitBtn>
         )}
       </InputWrapper>
-      <ActionButton buttonColor="#2e64e5" useNativeDriver={true}>
+      <ActionButton buttonColor="#2e64e5">
         <ActionButton.Item
           buttonColor="#9b59b6"
           title="Take Photo"
