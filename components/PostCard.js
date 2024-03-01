@@ -3,6 +3,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import ProgressiveImage from './ProgressiveImage';
+import {useFocusEffect} from '@react-navigation/native'; // Import useFocusEffect hook
 
 import {
   Container,
@@ -71,6 +72,13 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
   useEffect(() => {
     getUser();
   }, []);
+
+  // Use useFocusEffect to refetch user information when the postcard screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      getUser();
+    }, []),
+  );
 
   const handleLike = () => {
     Alert.alert('Liked is clicked');

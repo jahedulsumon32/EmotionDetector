@@ -62,6 +62,7 @@ const EditProfileScreen = () => {
       })
       .then(() => {
         console.log('User Updated!');
+        getUser();
         Alert.alert(
           'Profile Updated!',
           'Your profile has been updated successfully.',
@@ -125,12 +126,17 @@ const EditProfileScreen = () => {
       compressImageMaxHeight: 300,
       cropping: true,
       compressImageQuality: 0.7,
-    }).then(image => {
-      console.log(image);
-      const imageUri = Platform.OS === 'ios' ? image.sourceURL : image.path;
-      setImage(imageUri);
-      setShowOptions(false);
-    });
+    })
+      .then(image => {
+        console.log(image);
+        const imageUri = Platform.OS === 'ios' ? image.sourceURL : image.path;
+        setImage(imageUri);
+        setShowOptions(false);
+      })
+      .catch(error => {
+        console.log('User cancelled image selection');
+        // Handle the error or do nothing if you just want to log it
+      });
   };
 
   const choosePhotoFromLibrary = () => {
@@ -139,12 +145,17 @@ const EditProfileScreen = () => {
       height: 300,
       cropping: true,
       compressImageQuality: 0.7,
-    }).then(image => {
-      console.log(image);
-      const imageUri = Platform.OS === 'ios' ? image.sourceURL : image.path;
-      setImage(imageUri);
-      setShowOptions(false);
-    });
+    })
+      .then(image => {
+        console.log(image);
+        const imageUri = Platform.OS === 'ios' ? image.sourceURL : image.path;
+        setImage(imageUri);
+        setShowOptions(false);
+      })
+      .catch(error => {
+        console.log('User cancelled image selection');
+        // Handle the error or do nothing if you just want to log it
+      });
   };
 
   return (
