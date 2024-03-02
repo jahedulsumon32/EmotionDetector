@@ -30,7 +30,15 @@ import {
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 import firestore from '@react-native-firebase/firestore';
-import {Alert} from 'react-native';
+import {
+  Alert,
+  Modal,
+  View,
+  ScrollView,
+  TextInput,
+  Text,
+  Button,
+} from 'react-native';
 
 const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
   const {user, logout} = useContext(AuthContext);
@@ -40,13 +48,17 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
   const [disliked, setDisliked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [dislikesCount, setDislikesCount] = useState(0);
+  const [commentText, setCommentText] = useState('');
+  const [comments, setComments] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     checkIfLiked();
     checkIfDisliked();
     fetchLikesCount();
     fetchDislikesCount();
-  }, [liked, disliked, likesCount, dislikesCount]);
+    fetchComments();
+  }, [liked, disliked, likesCount, dislikesCount, comments]);
 
   const checkIfLiked = async () => {
     const likesRef = firestore()
@@ -90,6 +102,20 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
     setDislikesCount(querySnapshot.size);
   };
 
+  const fetchComments = async () => {
+    // Fetch comments for the post
+    const commentsRef = firestore()
+      .collection('posts')
+      .doc(item.id)
+      .collection('comments');
+    const snapshot = await commentsRef.get();
+    const commentsData = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setComments(commentsData);
+  };
+
   likeIcon = item.liked ? 'heart' : 'heart-outline';
   likeIconColor = item.liked ? '#2e64e5' : '#333';
   dislikeText = 'Dislike';
@@ -112,12 +138,13 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
     dislikeText = 'dislike';
   }
 
+  var commenttext = 'comment';
   if (item.comments == 1) {
-    commentText = '1 Comment';
+    commenttext = '1 Comment';
   } else if (item.comments > 1) {
-    commentText = item.comments + ' Comments';
+    commenttext = item.comments + ' Comments';
   } else {
-    commentText = 'Comment';
+    commenttext = 'Comment';
   }
 
   const getUser = async () => {
@@ -212,8 +239,68 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
     }
   };
 
-  const handleComment = () => {
-    Alert.alert('Comment is clicked');
+  const handleComment = async () => {
+    if (!commentText.trim()) {
+      return;
+    }
+
+    try {
+      // Fetch user data to get fname and lname
+      const userDoc = await firestore()
+        .collection('users')
+        .doc(user.uid)
+        .get()
+        .then();
+      const userData = userDoc.data();
+
+      await firestore()
+        .collection('posts')
+        .doc(item.id)
+        .collection('comments')
+        .add({
+          userId: user.uid,
+          fname: userData.fname, // Add fname
+          lname: userData.lname, // Add lname
+          text: commentText,
+          timestamp: firestore.Timestamp.fromDate(new Date()),
+        })
+        .then(() => {
+          console.log('Comment Added!');
+          Alert.alert(
+            'Comment published!',
+            'Your comment has been published Successfully!',
+          );
+          setCommentText('');
+          fetchComments();
+        })
+        .catch(error => {
+          console.log(
+            'Something went wrong with added post to firestore.',
+            error,
+          );
+        });
+    } catch (error) {
+      console.error('Error adding comment: ', error);
+    }
+  };
+
+  const handleDeleteComment = async commentId => {
+    try {
+      // Access the comment document in Firestore using its ID and delete it
+      await firestore()
+        .collection('posts')
+        .doc(item.id)
+        .collection('comments')
+        .doc(commentId)
+        .delete();
+
+      // Optional: Fetch the comments again after deletion to refresh the UI
+      fetchComments();
+
+      console.log('Comment deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
   };
 
   const handleEmotion = () => {
@@ -274,9 +361,14 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
           </Interaction>
 
           {/* Comment button */}
-          <Interaction onPress={handleComment}>
+          {/* <Interaction onPress={handleComment}>
             <Ionicons name="chatbubble-outline" size={20} />
             <InteractionText>{commentText}</InteractionText>
+          </Interaction> */}
+
+          <Interaction onPress={() => setModalVisible(true)}>
+            <Ionicons name="chatbubble-outline" size={20} />
+            <InteractionText>{`${comments.length} Comments`}</InteractionText>
           </Interaction>
 
           {/* Emtion Button */}
@@ -292,6 +384,101 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
             </Interaction>
           ) : null}
         </InteractionWrapper>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            }}>
+            <View
+              style={{
+                backgroundColor: 'white',
+                padding: 20,
+                borderRadius: 10,
+                width: '80%',
+              }}>
+              <ScrollView style={{maxHeight: 300}}>
+                {comments.map((comment, index) => (
+                  <View key={index} style={{marginBottom: 10}}>
+                    <Text style={{fontWeight: 'bold', color: 'black'}}>
+                      {comment.fname + ' ' + comment.lname}
+                    </Text>
+
+                    <Text style={{color: 'black'}}>{comment.text}</Text>
+                    <Text style={{fontSize: 12, color: 'gray'}}>
+                      {moment(comment.timestamp.toDate()).fromNow()}
+                    </Text>
+                    {/* Delete button (rendered only for the owner) */}
+                    {user.uid === comment.userId && (
+                      <Button
+                        title="Delete comment"
+                        onPress={() => handleDeleteComment(comment.id)}
+                        color="#40e0d0"
+                        style={{
+                          width: 120,
+                          height: 30,
+                          borderRadius: 5,
+                        }}
+                      />
+                    )}
+                  </View>
+                ))}
+                <TextInput
+                  placeholder="Add a comment..."
+                  value={commentText}
+                  onChangeText={text => setCommentText(text)}
+                  onSubmitEditing={handleComment}
+                  style={{
+                    borderWidth: 4,
+                    borderColor: 'gray',
+                    borderRadius: 5,
+                    padding: 10,
+                    marginTop: 10,
+                    marginBottom: 10,
+                  }}
+                />
+              </ScrollView>
+              {/* Wrapper View for Add Comment and Close buttons */}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                {/* Add Comment Button */}
+                <Button
+                  title="Add Comment"
+                  onPress={handleComment}
+                  color="#2e64e5"
+                  style={{
+                    marginTop: 20,
+                    borderRadius: 5,
+                    marginBottom: 10,
+                    width: '48%', // Adjust width to accommodate spacing
+                  }}
+                />
+                {/* Close Button */}
+                <Button
+                  title="Close"
+                  onPress={() => setModalVisible(false)}
+                  color="#2e64e5"
+                  style={{
+                    marginTop: 20,
+                    borderRadius: 5,
+                    width: '48%', // Adjust width to accommodate spacing
+                  }}
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
       </Card>
     </GestureHandlerRootView>
   );
