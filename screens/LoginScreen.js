@@ -56,7 +56,7 @@ const LoginScreen = ({navigation}) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Image source={require('../assets/logo4.png')} style={styles.logo} />
+      <Image source={require('../assets/b1.png')} style={styles.logo} />
       <Text style={styles.text}>Emotion Detector</Text>
 
       <FormInput

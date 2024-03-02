@@ -1,6 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import ProgressiveImage from './ProgressiveImage';
 import {useFocusEffect} from '@react-navigation/native'; // Import useFocusEffect hook
@@ -35,17 +36,80 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
   const {user, logout} = useContext(AuthContext);
   const [userData, setUserData] = useState(null);
 
+  const [liked, setLiked] = useState(false);
+  const [disliked, setDisliked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [dislikesCount, setDislikesCount] = useState(0);
+
+  useEffect(() => {
+    checkIfLiked();
+    checkIfDisliked();
+    fetchLikesCount();
+    fetchDislikesCount();
+  }, [liked, disliked, likesCount, dislikesCount]);
+
+  const checkIfLiked = async () => {
+    const likesRef = firestore()
+      .collection('posts')
+      .doc(item.id)
+      .collection('likes')
+      .doc(user.uid);
+    const doc = await likesRef.get();
+    if (doc.exists) {
+      setLiked(true);
+    }
+  };
+
+  const checkIfDisliked = async () => {
+    const dislikesRef = firestore()
+      .collection('posts')
+      .doc(item.id)
+      .collection('dislikes')
+      .doc(user.uid);
+    const doc = await dislikesRef.get();
+    if (doc.exists) {
+      setDisliked(true);
+    }
+  };
+
+  const fetchLikesCount = async () => {
+    const likesRef = firestore()
+      .collection('posts')
+      .doc(item.id)
+      .collection('likes');
+    const querySnapshot = await likesRef.get();
+    setLikesCount(querySnapshot.size);
+  };
+
+  const fetchDislikesCount = async () => {
+    const dislikesRef = firestore()
+      .collection('posts')
+      .doc(item.id)
+      .collection('dislikes');
+    const querySnapshot = await dislikesRef.get();
+    setDislikesCount(querySnapshot.size);
+  };
+
   likeIcon = item.liked ? 'heart' : 'heart-outline';
   likeIconColor = item.liked ? '#2e64e5' : '#333';
   dislikeText = 'Dislike';
+  likeText = 'Like';
   emotion = 'Emotion';
 
-  if (item.likes == 1) {
+  if (likesCount === 1) {
     likeText = '1 Like';
-  } else if (item.likes > 1) {
-    likeText = item.likes + ' Likes';
+  } else if (likesCount > 1) {
+    likeText = likesCount + ' Likes';
   } else {
     likeText = 'Like';
+  }
+
+  if (dislikesCount === 1) {
+    dislikeText = '1 Dislike';
+  } else if (dislikesCount > 1) {
+    dislikeText = dislikesCount + ' Dislikes';
+  } else {
+    dislikeText = 'dislike';
   }
 
   if (item.comments == 1) {
@@ -80,12 +144,72 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
     }, []),
   );
 
-  const handleLike = () => {
-    Alert.alert('Liked is clicked');
+  const handleLike = async () => {
+    if (!liked) {
+      setLiked(true);
+      // Add user ID to the 'likes' array in Firestore
+      await firestore()
+        .collection('posts')
+        .doc(item.id)
+        .collection('likes')
+        .doc(user.uid)
+        .set({});
+      // Remove user ID from 'dislikes' array if user has disliked before
+      if (disliked) {
+        await firestore()
+          .collection('posts')
+          .doc(item.id)
+          .collection('dislikes')
+          .doc(user.uid)
+          .delete();
+        setDisliked(false);
+      }
+      fetchLikesCount();
+    } else {
+      setLiked(false);
+      // Remove user ID from 'likes' array
+      await firestore()
+        .collection('posts')
+        .doc(item.id)
+        .collection('likes')
+        .doc(user.uid)
+        .delete();
+      fetchLikesCount();
+    }
   };
 
-  const handleDisLike = () => {
-    Alert.alert('DisLiked is clicked');
+  const handleDislike = async () => {
+    if (!disliked) {
+      setDisliked(true);
+      // Add user ID to the 'dislikes' array in Firestore
+      await firestore()
+        .collection('posts')
+        .doc(item.id)
+        .collection('dislikes')
+        .doc(user.uid)
+        .set({});
+      // Remove user ID from 'likes' array if user has liked before
+      if (liked) {
+        await firestore()
+          .collection('posts')
+          .doc(item.id)
+          .collection('likes')
+          .doc(user.uid)
+          .delete();
+        setLiked(false);
+      }
+      fetchDislikesCount();
+    } else {
+      setDisliked(false);
+      // Remove user ID from 'dislikes' array
+      await firestore()
+        .collection('posts')
+        .doc(item.id)
+        .collection('dislikes')
+        .doc(user.uid)
+        .delete();
+      fetchDislikesCount();
+    }
   };
 
   const handleComment = () => {
@@ -131,14 +255,22 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
 
         <InteractionWrapper>
           {/* like button */}
-          <Interaction active={item.liked} onPress={handleLike}>
-            <Ionicons name={likeIcon} size={20} color={likeIconColor} />
-            <InteractionText active={item.liked}>{likeText}</InteractionText>
+          <Interaction active={liked} onPress={handleLike}>
+            <Ionicons
+              name={liked ? 'heart' : 'heart-outline'}
+              size={20}
+              color={liked ? '#2e64e5' : '#333'}
+            />
+            <InteractionText active={liked}>{likeText}</InteractionText>
           </Interaction>
           {/* Dislike button */}
-          <Interaction onPress={handleDisLike}>
-            <SimpleLineIcons name="dislike" size={20} />
-            <InteractionText>{dislikeText}</InteractionText>
+          <Interaction active={disliked} onPress={handleDislike}>
+            <AntDesign
+              name={disliked ? 'dislike1' : 'dislike2'}
+              size={20}
+              color={disliked ? '#2e64e5' : '#333'}
+            />
+            <InteractionText active={disliked}>{dislikeText}</InteractionText>
           </Interaction>
 
           {/* Comment button */}
