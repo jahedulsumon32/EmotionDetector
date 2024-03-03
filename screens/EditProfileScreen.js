@@ -233,6 +233,18 @@ const EditProfileScreen = () => {
           </Text>
 
           <View style={styles.action}>
+            <FontAwesome name="user" color="#333333" size={20} />
+            <TextInput
+              placeholder="Enter Unique User Name"
+              placeholderTextColor="#666666"
+              autoCorrect={false}
+              value={userData ? userData.fname : ''}
+              onChangeText={txt => setUserData({...userData, fname: txt})}
+              style={styles.textInput}
+            />
+          </View>
+
+          <View style={styles.action}>
             <FontAwesome name="user-o" color="#333333" size={20} />
             <TextInput
               placeholder="First Name"

@@ -1,8 +1,15 @@
+import 'react-native-gesture-handler';
 import React from 'react';
 import {View, TouchableOpacity, Text} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {
+  createDrawerNavigator,
+  DrawerContentScrollView,
+  DrawerItemList,
+  DrawerItem,
+} from '@react-navigation/drawer';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -19,6 +26,7 @@ import EditProfileScreen from '../screens/EditProfileScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+const Drawer = createDrawerNavigator(); // Step 1: Create Drawer Navigator
 
 const FeedStack = ({navigation}) => (
   <Stack.Navigator>
@@ -30,7 +38,8 @@ const FeedStack = ({navigation}) => (
         headerTitleStyle: {
           color: '#2e64e5',
           fontFamily: 'Kufam-SemiBoldItalic',
-          fontSize: 20,
+          fontSize: 21,
+          marginTop: 100,
         },
 
         headerStyle: {
@@ -117,84 +126,95 @@ const ProfileStack = ({navigation}) => (
   </Stack.Navigator>
 );
 
+const TabNavigator = () => (
+  <Tab.Navigator
+    screenOptions={{
+      headerShown: false,
+      tabBarActiveTintColor: '#2e64e5',
+      tabBarStyle: [
+        {
+          display: 'flex',
+        },
+        null,
+      ],
+    }}>
+    <Tab.Screen
+      name="Home1"
+      component={FeedStack}
+      options={{
+        tabBarLabel: 'Home',
+        title: '',
+        hight: 10,
+        tabBarIcon: ({color, size}) => (
+          <MaterialCommunityIcons
+            name="home-outline"
+            color={color}
+            size={size}
+          />
+        ),
+      }}
+    />
+    <Tab.Screen
+      name="Detect Emotion From Text"
+      component={ChatScreen}
+      options={{
+        tabBarLabel: 'Detector',
+        tabBarIcon: ({color, size}) => (
+          <MaterialCommunityIcons
+            name="smoke-detector-outline"
+            color={color}
+            size={size}
+          />
+        ),
+      }}
+    />
+
+    <Tab.Screen
+      name="Review This App"
+      component={ReviewScreen}
+      options={{
+        tabBarLabel: 'Review',
+        tabBarIcon: ({color, size}) => (
+          <Ionicons name="chatbox-ellipses-outline" color={color} size={size} />
+        ),
+      }}
+    />
+
+    <Tab.Screen
+      name="Map"
+      component={MapScreen}
+      options={{
+        tabBarLabel: 'Map',
+        tabBarIcon: ({color, size}) => (
+          <Feather name="map-pin" color={color} size={size} />
+        ),
+      }}
+    />
+
+    <Tab.Screen
+      name="Profile"
+      component={ProfileStack}
+      options={{
+        // tabBarLabel: 'Home',
+        tabBarIcon: ({color, size}) => (
+          <Ionicons name="person-outline" color={color} size={size} />
+        ),
+      }}
+    />
+  </Tab.Navigator>
+);
+
 const AppStack = () => {
   return (
-    <Tab.Navigator
-      screenOptions={{
-        tabBarActiveTintColor: '#2e64e5',
-        tabBarStyle: [
-          {
-            display: 'flex',
-          },
-          null,
-        ],
-      }}>
-      <Tab.Screen
-        name="Home"
-        component={FeedStack}
-        options={{
-          tabBarLabel: 'Home',
-          tabBarIcon: ({color, size}) => (
-            <MaterialCommunityIcons
-              name="home-outline"
-              color={color}
-              size={size}
-            />
-          ),
-        }}
+    <Drawer.Navigator>
+      <Drawer.Screen
+        name="Drawer Home"
+        component={TabNavigator}
+        options={{title: '', drawerLabel: 'Home'}}
       />
-      <Tab.Screen
-        name="Detect Emotion From Text"
-        component={ChatScreen}
-        options={{
-          tabBarLabel: 'Detector',
-          tabBarIcon: ({color, size}) => (
-            <MaterialCommunityIcons
-              name="smoke-detector-outline"
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-
-      <Tab.Screen
-        name="Review This App"
-        component={ReviewScreen}
-        options={{
-          tabBarLabel: 'Review',
-          tabBarIcon: ({color, size}) => (
-            <Ionicons
-              name="chatbox-ellipses-outline"
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-
-      <Tab.Screen
-        name="Map"
-        component={MapScreen}
-        options={{
-          tabBarLabel: 'Map',
-          tabBarIcon: ({color, size}) => (
-            <Feather name="map-pin" color={color} size={size} />
-          ),
-        }}
-      />
-
-      <Tab.Screen
-        name="Profile"
-        component={ProfileStack}
-        options={{
-          // tabBarLabel: 'Home',
-          tabBarIcon: ({color, size}) => (
-            <Ionicons name="person-outline" color={color} size={size} />
-          ),
-        }}
-      />
-    </Tab.Navigator>
+      <Drawer.Screen name="Map S" component={MapScreen} />
+      <Drawer.Screen name="Review This App" component={ReviewScreen} />
+    </Drawer.Navigator>
   );
 };
 
