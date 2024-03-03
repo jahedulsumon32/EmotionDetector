@@ -27,6 +27,57 @@ const EditProfileScreen = () => {
   const [transferred, setTransferred] = useState(0);
   const [userData, setUserData] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [isUsernameAvailable, setIsUsernameAvailable] = useState(false);
+
+  const handleUsernameChange = async () => {
+    const trimmedUsername = userName.trim(); // Trim the username to remove leading and trailing spaces
+
+    try {
+      const querySnapshot = await firestore()
+        .collection('users')
+        .where('username', '==', trimmedUsername)
+        .get();
+
+      if (querySnapshot.empty) {
+        // Username is available
+        setIsUsernameAvailable(true);
+      } else {
+        // Username is not available
+        setIsUsernameAvailable(false);
+        Alert.alert('Username is not available');
+        getUser();
+      }
+    } catch (error) {
+      console.error('Error checking username availability: ', error);
+    }
+  };
+
+  // const isUsernameUnique = async username1 => {
+  //   try {
+  //     const nameDocs = await usersColRef
+  //       .where('username', '==', username1)
+  //       .get();
+  //     if (nameDocs.empty) return true;
+  //     else return false;
+  //   } catch (error) {
+  //     console.error('Error checking username uniqueness:', error);
+  //     throw error;
+  //   }
+  // };
+
+  // const handleUsernameChange = () => {
+  //   try {
+  //     const isUnique = isUsernameUnique(userName.trim());
+  //     setIsUsernameAvailable(isUnique);
+  //     if (!isUnique) {
+  //       Alert.alert('Username is not available');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error checking username availability: ', error);
+  //     Alert.alert('An error occurred while checking username availability');
+  //   }
+  // };
 
   const getUser = async () => {
     const currentUser = await firestore()
@@ -38,8 +89,44 @@ const EditProfileScreen = () => {
           console.log('User Data', documentSnapshot.data());
           setUserData(documentSnapshot.data());
         }
+      })
+      .catch(error => {
+        console.error('Error getting user details: ', error);
       });
   };
+
+  // const handleUpdate = async () => {
+  //   let imgUrl = await uploadImage();
+
+  //   if (imgUrl == null && userData.userImg) {
+  //     imgUrl = userData.userImg;
+  //   }
+
+  //   firestore()
+  //     .collection('users')
+  //     .doc(user.uid)
+  //     .update({
+  //       username: userData.username,
+  //       fname: userData.fname,
+  //       lname: userData.lname,
+  //       about: userData.about,
+  //       phone: userData.phone,
+  //       country: userData.country,
+  //       city: userData.city,
+  //       userImg: imgUrl,
+  //     })
+  //     .then(() => {
+  //       console.log('User Updated!');
+  //       getUser();
+  //       Alert.alert(
+  //         'Profile Updated!',
+  //         'Your profile has been updated successfully.',
+  //       );
+  //     })
+  //     .catch(error => {
+  //       console.error('Error updating user details: ', error);
+  //     });
+  // };
 
   const handleUpdate = async () => {
     let imgUrl = await uploadImage();
@@ -48,18 +135,24 @@ const EditProfileScreen = () => {
       imgUrl = userData.userImg;
     }
 
-    firestore()
+    // Construct an object containing only the defined fields
+    const updateData = {
+      userImg: imgUrl,
+    };
+
+    // Add other fields if they are defined
+    if (userData.username) updateData.username = userData.username;
+    if (userData.fname) updateData.fname = userData.fname;
+    if (userData.lname) updateData.lname = userData.lname;
+    if (userData.about) updateData.about = userData.about;
+    if (userData.phone) updateData.phone = userData.phone;
+    if (userData.country) updateData.country = userData.country;
+    if (userData.city) updateData.city = userData.city;
+
+    await firestore()
       .collection('users')
       .doc(user.uid)
-      .update({
-        fname: userData.fname,
-        lname: userData.lname,
-        about: userData.about,
-        phone: userData.phone,
-        country: userData.country,
-        city: userData.city,
-        userImg: imgUrl,
-      })
+      .update(updateData)
       .then(() => {
         console.log('User Updated!');
         getUser();
@@ -67,6 +160,9 @@ const EditProfileScreen = () => {
           'Profile Updated!',
           'Your profile has been updated successfully.',
         );
+      })
+      .catch(error => {
+        console.error('Error updating user details: ', error);
       });
   };
 
@@ -235,14 +331,20 @@ const EditProfileScreen = () => {
           <View style={styles.action}>
             <FontAwesome name="user" color="#333333" size={20} />
             <TextInput
-              placeholder="Enter Unique User Name"
+              placeholder="Enter a username"
               placeholderTextColor="#666666"
               autoCorrect={false}
-              value={userData ? userData.fname : ''}
-              onChangeText={txt => setUserData({...userData, fname: txt})}
+              value={userData ? userData.username : ''}
+              onChangeText={txt => {
+                setUserData({...userData, username: txt});
+                setUserName(txt);
+              }}
               style={styles.textInput}
             />
           </View>
+          {/* {!isUsernameAvailable && (
+            <Text style={styles.errorText}>Username is already taken</Text>
+          )} */}
 
           <View style={styles.action}>
             <FontAwesome name="user-o" color="#333333" size={20} />
@@ -255,6 +357,7 @@ const EditProfileScreen = () => {
               style={styles.textInput}
             />
           </View>
+
           <View style={styles.action}>
             <FontAwesome name="user-o" color="#333333" size={20} />
             <TextInput
@@ -319,7 +422,15 @@ const EditProfileScreen = () => {
             />
           </View>
 
-          <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
+          <TouchableOpacity
+            style={styles.updateButton}
+            onPress={async () => {
+              await handleUsernameChange();
+              // If username is available, then proceed with handleUpdate
+              if (isUsernameAvailable) {
+                handleUpdate();
+              }
+            }}>
             <Text style={styles.updateButtonText}>Update</Text>
           </TouchableOpacity>
         </View>
