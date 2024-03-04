@@ -61,26 +61,34 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
   }, [liked, disliked, likesCount, dislikesCount, comments]);
 
   const checkIfLiked = async () => {
-    const likesRef = firestore()
-      .collection('posts')
-      .doc(item.id)
-      .collection('likes')
-      .doc(user.uid);
-    const doc = await likesRef.get();
-    if (doc.exists) {
-      setLiked(true);
+    try {
+      const likesRef = firestore()
+        .collection('posts')
+        .doc(item.id)
+        .collection('likes')
+        .doc(user.uid);
+      const doc = await likesRef.get();
+      if (doc.exists) {
+        setLiked(true);
+      }
+    } catch {
+      console.log('Error occur during liked check');
     }
   };
 
   const checkIfDisliked = async () => {
-    const dislikesRef = firestore()
-      .collection('posts')
-      .doc(item.id)
-      .collection('dislikes')
-      .doc(user.uid);
-    const doc = await dislikesRef.get();
-    if (doc.exists) {
-      setDisliked(true);
+    try {
+      const dislikesRef = firestore()
+        .collection('posts')
+        .doc(item.id)
+        .collection('dislikes')
+        .doc(user.uid);
+      const doc = await dislikesRef.get();
+      if (doc.exists) {
+        setDisliked(true);
+      }
+    } catch {
+      console.log('Error occur during disliked check');
     }
   };
 

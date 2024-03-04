@@ -7,6 +7,8 @@ import {
   TextInput,
   StyleSheet,
   Alert,
+  Button,
+  Platform,
 } from 'react-native';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -14,6 +16,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
+import DateTimePicker from '@react-native-community/datetimepicker'; // Import DateTimePicker
 
 import {AuthContext} from '../navigation/AuthProvider';
 import firestore from '@react-native-firebase/firestore';
@@ -29,8 +32,11 @@ const EditProfileScreen = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [userName, setUserName] = useState('');
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState(new Date()); // Initialize date of birth state with current date
+  const [showDatePicker, setShowDatePicker] = useState(false); // State to manage visibility of date picker
 
   const handleUsernameChange = async () => {
+    if (userName === '') return;
     const trimmedUsername = userName.trim(); // Trim the username to remove leading and trailing spaces
 
     try {
@@ -88,6 +94,9 @@ const EditProfileScreen = () => {
         if (documentSnapshot.exists) {
           console.log('User Data', documentSnapshot.data());
           setUserData(documentSnapshot.data());
+          // Initialize dateOfBirth from Firestore if available or set it to the current date
+          const dob = documentSnapshot.data().dateofbirth || new Date();
+          setDateOfBirth(new Date(dob.seconds * 1000)); // Convert Firestore timestamp to Date
         }
       })
       .catch(error => {
@@ -148,6 +157,7 @@ const EditProfileScreen = () => {
     if (userData.phone) updateData.phone = userData.phone;
     if (userData.country) updateData.country = userData.country;
     if (userData.city) updateData.city = userData.city;
+    updateData.dateofbirth = dateOfBirth;
 
     await firestore()
       .collection('users')
@@ -342,6 +352,13 @@ const EditProfileScreen = () => {
               style={styles.textInput}
             />
           </View>
+          <TouchableOpacity
+            style={styles.updateUsernameButton}
+            onPress={() => {
+              handleUsernameChange();
+            }}>
+            <Text style={styles.updateButtonText}>Update Username</Text>
+          </TouchableOpacity>
           {/* {!isUsernameAvailable && (
             <Text style={styles.errorText}>Username is already taken</Text>
           )} */}
@@ -422,14 +439,41 @@ const EditProfileScreen = () => {
             />
           </View>
 
+          <View>
+            {/* Date of Birth Picker */}
+            <TouchableOpacity
+              style={styles.action}
+              onPress={() => setShowDatePicker(true)}>
+              <MaterialCommunityIcons
+                name="calendar"
+                color="#333333"
+                size={20}
+              />
+              <Text style={styles.dateText}>
+                <Text>Date Of Birth: </Text>
+                {dateOfBirth.toLocaleDateString()}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Show DateTimePicker if showDatePicker is true */}
+            {showDatePicker && (
+              <DateTimePicker
+                value={dateOfBirth}
+                mode="date"
+                display="spinner"
+                onChange={(event, selectedDate) => {
+                  const currentDate = selectedDate || dateOfBirth;
+                  setShowDatePicker(Platform.OS === 'ios'); // Hide the picker on iOS
+                  setDateOfBirth(currentDate);
+                }}
+              />
+            )}
+          </View>
+
           <TouchableOpacity
             style={styles.updateButton}
-            onPress={async () => {
-              await handleUsernameChange();
-              // If username is available, then proceed with handleUpdate
-              if (isUsernameAvailable) {
-                handleUpdate();
-              }
+            onPress={() => {
+              handleUpdate();
             }}>
             <Text style={styles.updateButtonText}>Update</Text>
           </TouchableOpacity>
@@ -483,6 +527,11 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f2f2f2',
     paddingBottom: 5,
   },
+  dateText: {
+    flex: 1,
+    marginLeft: 10,
+    color: '#333333',
+  },
   actionError: {
     flexDirection: 'row',
     marginTop: 10,
@@ -493,6 +542,12 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     marginTop: Platform.OS === 'ios' ? 0 : -12,
+    paddingLeft: 10,
+    color: '#333333',
+  },
+  textInputUsername: {
+    flex: 1,
+    marginTop: Platform.OS === 'ios' ? 0 : 0,
     paddingLeft: 10,
     color: '#333333',
   },
@@ -535,7 +590,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
   },
-
+  updateUsernameButton: {
+    backgroundColor: '#2e64e5',
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 60,
+  },
   // New styles for overlay and overlay buttons
   overlay: {
     position: 'absolute',
