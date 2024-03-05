@@ -52,14 +52,6 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
   const [comments, setComments] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
 
-  useEffect(() => {
-    checkIfLiked();
-    checkIfDisliked();
-    fetchLikesCount();
-    fetchDislikesCount();
-    fetchComments();
-  }, [liked, disliked, likesCount, dislikesCount, comments]);
-
   const checkIfLiked = async () => {
     try {
       const likesRef = firestore()
@@ -170,6 +162,11 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
 
   useEffect(() => {
     getUser();
+    checkIfLiked();
+    checkIfDisliked();
+    fetchLikesCount();
+    fetchDislikesCount();
+    fetchComments();
   }, []);
 
   // Use useFocusEffect to refetch user information when the postcard screen comes into focus
@@ -199,7 +196,6 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
           .delete();
         setDisliked(false);
       }
-      fetchLikesCount();
     } else {
       setLiked(false);
       // Remove user ID from 'likes' array
@@ -209,8 +205,9 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
         .collection('likes')
         .doc(user.uid)
         .delete();
-      fetchLikesCount();
     }
+    fetchDislikesCount();
+    fetchLikesCount();
   };
 
   const handleDislike = async () => {
@@ -233,7 +230,6 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
           .delete();
         setLiked(false);
       }
-      fetchDislikesCount();
     } else {
       setDisliked(false);
       // Remove user ID from 'dislikes' array
@@ -243,8 +239,9 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
         .collection('dislikes')
         .doc(user.uid)
         .delete();
-      fetchDislikesCount();
     }
+    fetchDislikesCount();
+    fetchlikesCount();
   };
 
   const handleComment = async () => {
@@ -412,7 +409,7 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
                 borderRadius: 10,
                 width: '80%',
               }}>
-              <ScrollView style={{maxHeight: 300}}>
+              <ScrollView>
                 {comments.map((comment, index) => (
                   <View key={index} style={{marginBottom: 10}}>
                     <Text style={{fontWeight: 'bold', color: 'black'}}>
