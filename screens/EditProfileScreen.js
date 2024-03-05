@@ -17,6 +17,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
 import DateTimePicker from '@react-native-community/datetimepicker'; // Import DateTimePicker
+import RNPickerSelect from 'react-native-picker-select';
 
 import {AuthContext} from '../navigation/AuthProvider';
 import firestore from '@react-native-firebase/firestore';
@@ -34,6 +35,95 @@ const EditProfileScreen = () => {
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState(new Date()); // Initialize date of birth state with current date
   const [showDatePicker, setShowDatePicker] = useState(false); // State to manage visibility of date picker
+  const [selectedDivision, setSelectedDivision] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [cityOptions, setCityOptions] = useState([]);
+
+  const handleDivisionChange = division => {
+    setSelectedDivision(division);
+    let cities = [];
+    switch (division) {
+      case 'Dhaka':
+        cities = [
+          'Dhaka',
+          'Gazipur',
+          'Narayanganj',
+          'Tongi',
+          'Savar',
+          'Dhamrai',
+          'Keraniganj',
+          'Narsingdi',
+          'Tangail',
+          'Mymensingh',
+          'Jamalpur',
+          'Kishoreganj',
+          'Manikganj',
+        ];
+        break;
+      case 'Chittagong':
+        cities = [
+          'Chittagong',
+          "Cox's Bazar",
+          'Feni',
+          'Rangamati',
+          'Bandarban',
+          'Khagrachhari',
+          'Comilla',
+          'Chandpur',
+          'Lakshmipur',
+          'Noakhali',
+          'Brahmanbaria',
+        ];
+        break;
+      case 'Rajshahi':
+        cities = [
+          'Rajshahi',
+          'Bogra',
+          'Pabna',
+          'Naogaon',
+          'Joypurhat',
+          'Sirajganj',
+          'Natore',
+          'Chapai Nawabganj',
+        ];
+        break;
+      case 'Khulna':
+        cities = ['Khulna', 'Jessore'];
+        break;
+      case 'Barishal':
+        cities = [
+          'Barishal',
+          'Bhola',
+          'Jhalokati',
+          'Patuakhali',
+          'Pirojpur',
+          'Barguna',
+        ];
+        break;
+      case 'Sylhet':
+        cities = ['Sylhet', 'Moulvibazar', 'Habiganj', 'Sunamganj'];
+        break;
+      case 'Rangpur':
+        cities = [
+          'Rangpur',
+          'Dinajpur',
+          'Gaibandha',
+          'Kurigram',
+          'Nilphamari',
+          'Lalmonirhat',
+          'Thakurgaon',
+          'Panchagarh',
+        ];
+        break;
+      case 'Mymensingh':
+        cities = ['Mymensingh', 'Jamalpur', 'Netrokona', 'Sherpur'];
+        break;
+      default:
+        cities = [];
+    }
+    setCityOptions(cities);
+    setSelectedCity('');
+  };
 
   const handleUsernameChange = async () => {
     if (userName === '') return;
@@ -94,6 +184,8 @@ const EditProfileScreen = () => {
         if (documentSnapshot.exists) {
           console.log('User Data', documentSnapshot.data());
           setUserData(documentSnapshot.data());
+          setSelectedDivision(documentSnapshot.data().division);
+          setSelectedCity(documentSnapshot.data().cities);
           // Initialize dateOfBirth from Firestore if available or set it to the current date
           const dob = documentSnapshot.data().dateofbirth || new Date();
           setDateOfBirth(new Date(dob.seconds * 1000)); // Convert Firestore timestamp to Date
@@ -156,8 +248,9 @@ const EditProfileScreen = () => {
     if (userData.about) updateData.about = userData.about;
     if (userData.phone) updateData.phone = userData.phone;
     if (userData.country) updateData.country = userData.country;
-    if (userData.city) updateData.city = userData.city;
     updateData.dateofbirth = dateOfBirth;
+    updateData.division = selectedDivision;
+    updateData.cities = selectedCity;
 
     await firestore()
       .collection('users')
@@ -359,9 +452,6 @@ const EditProfileScreen = () => {
             }}>
             <Text style={styles.updateButtonText}>Update Username</Text>
           </TouchableOpacity>
-          {/* {!isUsernameAvailable && (
-            <Text style={styles.errorText}>Username is already taken</Text>
-          )} */}
 
           <View style={styles.action}>
             <FontAwesome name="user-o" color="#333333" size={20} />
@@ -423,7 +513,7 @@ const EditProfileScreen = () => {
               style={styles.textInput}
             />
           </View>
-          <View style={styles.action}>
+          {/* <View style={styles.action}>
             <MaterialCommunityIcons
               name="map-marker-outline"
               color="#333333"
@@ -436,6 +526,51 @@ const EditProfileScreen = () => {
               value={userData ? userData.city : ''}
               onChangeText={txt => setUserData({...userData, city: txt})}
               style={styles.textInput}
+            />
+          </View> */}
+
+          {/* Multiple Drop Down Button*/}
+          <View>
+            <MaterialCommunityIcons
+              name="map-marker-outline"
+              color="#333333"
+              size={20}
+            />
+            <RNPickerSelect
+              placeholder={{label: 'Select Division', value: null}}
+              items={[
+                {label: 'Dhaka', value: 'Dhaka'},
+                {label: 'Chittagong', value: 'Chittagong'},
+                {label: 'Rajshahi', value: 'Rajshahi'},
+                {label: 'Khulna', value: 'Khulna'},
+                {label: 'Barishal', value: 'Barishal'},
+                {label: 'Sylhet', value: 'Sylhet'},
+                {label: 'Rangpur', value: 'Rangpur'},
+                {label: 'Mymensingh', value: 'Mymensingh'},
+              ]}
+              value={selectedDivision}
+              onValueChange={value => handleDivisionChange(value)}
+              style={{
+                inputIOS: styles.textInput,
+                inputAndroid: styles.textInput,
+              }}
+            />
+          </View>
+          <View>
+            <MaterialCommunityIcons
+              name="map-marker-outline"
+              color="#333333"
+              size={20}
+            />
+            <RNPickerSelect
+              placeholder={{label: 'Select City', value: null}}
+              items={cityOptions.map(city => ({label: city, value: city}))}
+              value={selectedCity}
+              onValueChange={value => setSelectedCity(value)}
+              style={{
+                inputIOS: styles.textInput,
+                inputAndroid: styles.textInput,
+              }}
             />
           </View>
 
@@ -599,10 +734,11 @@ const styles = StyleSheet.create({
   // New styles for overlay and overlay buttons
   overlay: {
     position: 'absolute',
-    top: 20,
+    top: '100%', // Position the overlay below the dropdown
     width: '100%',
     alignItems: 'center',
     justifyContent: 'space-around',
+    zIndex: 1, // Ensure the overlay is above other elements
   },
   overlayButton: {
     paddingVertical: 5,
