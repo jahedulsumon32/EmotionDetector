@@ -85,21 +85,29 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
   };
 
   const fetchLikesCount = async () => {
-    const likesRef = firestore()
-      .collection('posts')
-      .doc(item.id)
-      .collection('likes');
-    const querySnapshot = await likesRef.get();
-    setLikesCount(querySnapshot.size);
+    try {
+      const likesRef = firestore()
+        .collection('posts')
+        .doc(item.id)
+        .collection('likes');
+      const querySnapshot = await likesRef.get();
+      setLikesCount(querySnapshot.size);
+    } catch {
+      console.log('Error while fetch like');
+    }
   };
 
   const fetchDislikesCount = async () => {
-    const dislikesRef = firestore()
-      .collection('posts')
-      .doc(item.id)
-      .collection('dislikes');
-    const querySnapshot = await dislikesRef.get();
-    setDislikesCount(querySnapshot.size);
+    try {
+      const dislikesRef = firestore()
+        .collection('posts')
+        .doc(item.id)
+        .collection('dislikes');
+      const querySnapshot = await dislikesRef.get();
+      setDislikesCount(querySnapshot.size);
+    } catch {
+      console.log('Error while fetch dislike');
+    }
   };
 
   const fetchComments = async () => {
@@ -205,6 +213,8 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
         .collection('likes')
         .doc(user.uid)
         .delete();
+
+      setDisliked(true);
     }
     fetchDislikesCount();
     fetchLikesCount();
@@ -239,9 +249,11 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
         .collection('dislikes')
         .doc(user.uid)
         .delete();
+
+      liked(true);
     }
+    fetchLikesCount();
     fetchDislikesCount();
-    fetchlikesCount();
   };
 
   const handleComment = async () => {
