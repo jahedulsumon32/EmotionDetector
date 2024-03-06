@@ -18,6 +18,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
 import DateTimePicker from '@react-native-community/datetimepicker'; // Import DateTimePicker
 import RNPickerSelect from 'react-native-picker-select';
+import DropdownComponent from '../components/DropdownComponent';
 
 import {AuthContext} from '../navigation/AuthProvider';
 import firestore from '@react-native-firebase/firestore';

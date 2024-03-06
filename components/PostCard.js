@@ -51,11 +51,27 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
   const [dislikesCount, setDislikesCount] = useState(0);
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState([]);
+  const [totalcomments, setTotalComments] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [existingRatings, setExistingRatings] = useState([]);
   const [newRating, setNewRating] = useState(0);
   const [modalVisibleRating, setModalVisibleRating] = useState(false);
   const [userHasRated, setUserHasRated] = useState(false); // State to track if user has already rated
+
+  // Pagination Control
+  const [currentPage, setCurrentPage] = useState(1);
+  const [commentsPerPage] = useState(10);
+
+  useEffect(() => {
+    fetchComments();
+  }, [currentPage]); // Fetch comments whenever currentPage changes
+
+  const totalPages = Math.ceil(comments.length / commentsPerPage);
+
+  const paginate = pageNumber => {
+    setCurrentPage(pageNumber);
+    fetchComments();
+  };
 
   const checkIfLiked = async () => {
     try {
@@ -116,6 +132,31 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
   };
 
   const fetchComments = async () => {
+    const startIndex = (currentPage - 1) * commentsPerPage;
+    const endIndex = startIndex + commentsPerPage;
+    // Fetch comments for the post
+    const commentsRef = firestore()
+      .collection('posts')
+      .doc(item.id)
+      .collection('comments')
+      .orderBy('timestamp', 'desc') // Order comments by timestamp in descending order
+      .limit(endIndex); // Limit to the end index
+
+    try {
+      const snapshot = await commentsRef.get();
+      const commentsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      const paginatedComments = commentsData.slice(startIndex, endIndex);
+      setComments(paginatedComments);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    }
+  };
+
+  const fetchAllComments = async () => {
     // Fetch comments for the post
     const commentsRef = firestore()
       .collection('posts')
@@ -126,7 +167,7 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
       id: doc.id,
       ...doc.data(),
     }));
-    setComments(commentsData);
+    setTotalComments(commentsData);
   };
 
   likeIcon = item.liked ? 'heart' : 'heart-outline';
@@ -179,7 +220,7 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
     checkIfDisliked();
     fetchLikesCount();
     fetchDislikesCount();
-    fetchComments();
+    fetchAllComments();
     fetchExistingRatings();
   }, []);
 
@@ -356,6 +397,7 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
           );
           setCommentText('');
           fetchComments();
+          fetchAllComments();
         })
         .catch(error => {
           console.log(
@@ -380,6 +422,7 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
 
       // Optional: Fetch the comments again after deletion to refresh the UI
       fetchComments();
+      fetchAllComments();
 
       console.log('Comment deleted successfully!');
     } catch (error) {
@@ -472,7 +515,7 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
 
           <Interaction onPress={() => setModalVisible(true)}>
             <Ionicons name="chatbubble-outline" size={20} />
-            <InteractionText>{`${comments.length} Comments`}</InteractionText>
+            <InteractionText>{`${totalcomments.length} Comments`}</InteractionText>
           </Interaction>
 
           {/* Emtion Button */}
@@ -512,10 +555,11 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
             }}>
             <View
               style={{
+                flex: 1,
                 backgroundColor: 'white',
                 padding: 20,
                 borderRadius: 10,
-                width: '80%',
+                width: '100%',
               }}>
               <ScrollView style={{marginBottom: 10}}>
                 {existingRatings.map((rating, index) => (
@@ -593,10 +637,11 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
             }}>
             <View
               style={{
+                flex: 1,
                 backgroundColor: 'white',
                 padding: 20,
                 borderRadius: 10,
-                width: '80%',
+                width: '100%',
               }}>
               <ScrollView>
                 {comments.map((comment, index) => (
@@ -624,21 +669,51 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
                     )}
                   </View>
                 ))}
-                <TextInput
-                  placeholder="Add a comment..."
-                  value={commentText}
-                  onChangeText={text => setCommentText(text)}
-                  onSubmitEditing={handleComment}
+
+                {/* Pagination controls */}
+                <View
                   style={{
-                    borderWidth: 4,
-                    borderColor: 'gray',
-                    borderRadius: 5,
-                    padding: 10,
+                    flexDirection: 'row',
+                    justifyContent: 'center',
                     marginTop: 10,
-                    marginBottom: 10,
-                  }}
-                />
+                    color: 'blue',
+                  }}>
+                  <Button
+                    title="Previous"
+                    onPress={() => {
+                      console.log('Previous button clicked');
+                      paginate(currentPage - 1);
+                    }}
+                    disabled={currentPage === 1}
+                  />
+                  <Button
+                    title="Next"
+                    onPress={() => {
+                      console.log('Next button clicked');
+                      paginate(currentPage + 1);
+                    }}
+                    disabled={
+                      currentPage * commentsPerPage >= totalcomments.length
+                    }
+                  />
+                </View>
               </ScrollView>
+
+              <TextInput
+                placeholder="Add a comment..."
+                value={commentText}
+                onChangeText={text => setCommentText(text)}
+                onPress={handleComment}
+                style={{
+                  borderWidth: 4,
+                  borderColor: 'gray',
+                  borderRadius: 5,
+                  padding: 10,
+                  marginTop: 10,
+                  marginBottom: 10,
+                }}
+              />
+
               {/* Wrapper View for Add Comment and Close buttons */}
               <View
                 style={{
