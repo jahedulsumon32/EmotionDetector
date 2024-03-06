@@ -58,13 +58,27 @@ const SignupScreen = ({navigation}) => {
 
       <FormInput
         labelValue={email}
-        onChangeText={userEmail => setEmail(userEmail)}
+        onChangeText={userEmail => {
+          setEmail(userEmail);
+          // Validate email on each change and update isValidEmail state
+          setIsValidEmail(validateEmail(userEmail));
+        }}
         placeholderText="Email"
         iconType="user"
         keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}
       />
+
+      {!isValidEmail && (
+        <View
+          style={{
+            flexDirection: 'row', // To align the text to the left
+            alignItems: 'center', // To vertically align the text with the input
+          }}>
+          <Text style={{color: 'red'}}>incorrect format of email</Text>
+        </View>
+      )}
 
       <FormInput
         labelValue={password}
