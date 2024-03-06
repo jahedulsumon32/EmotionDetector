@@ -5,6 +5,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import ProgressiveImage from './ProgressiveImage';
 import {useFocusEffect} from '@react-navigation/native'; // Import useFocusEffect hook
+import {AirbnbRating} from 'react-native-ratings';
 
 import {
   Container,
@@ -51,6 +52,10 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [existingRatings, setExistingRatings] = useState([]);
+  const [newRating, setNewRating] = useState(0);
+  const [modalVisibleRating, setModalVisibleRating] = useState(false);
+  const [userHasRated, setUserHasRated] = useState(false); // State to track if user has already rated
 
   const checkIfLiked = async () => {
     try {
@@ -175,6 +180,7 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
     fetchLikesCount();
     fetchDislikesCount();
     fetchComments();
+    fetchExistingRatings();
   }, []);
 
   // Use useFocusEffect to refetch user information when the postcard screen comes into focus
@@ -183,6 +189,67 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
       getUser();
     }, []),
   );
+
+  useEffect(() => {
+    // Check if the user has already rated this post
+    const userRating = existingRatings.find(
+      rating => rating.userId === user.uid,
+    );
+    setUserHasRated(!!userRating);
+  }, [existingRatings]);
+
+  const fetchExistingRatings = async () => {
+    try {
+      const ratingsRef = firestore()
+        .collection('posts')
+        .doc(item.id)
+        .collection('ratings');
+      const querySnapshot = await ratingsRef.get();
+      const ratingsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setExistingRatings(ratingsData);
+    } catch (error) {
+      console.error('Error fetching existing ratings: ', error);
+    }
+  };
+
+  const submitRating = async () => {
+    try {
+      // Fetch user data to get fname and lname
+      const userDoc = await firestore()
+        .collection('users')
+        .doc(user.uid)
+        .get()
+        .then();
+      const userData = userDoc.data();
+
+      // Check if the user has already rated this post
+      if (userHasRated) {
+        Alert.alert('You have already rated this post.');
+        return;
+      }
+
+      // Add new rating to Firestore
+      await firestore()
+        .collection('posts')
+        .doc(item.id)
+        .collection('ratings')
+        .add({
+          userId: user.uid,
+          rating: newRating,
+          fname: userData.fname, // Add fname
+          lname: userData.lname, // Add lname
+          timestamp: firestore.Timestamp.fromDate(new Date()),
+        });
+      Alert.alert('Rating submitted successfully!');
+      setNewRating(0); // Reset rating after submission
+      fetchExistingRatings();
+    } catch (error) {
+      console.error('Error submitting rating: ', error);
+    }
+  };
 
   const handleLike = async () => {
     if (!liked) {
@@ -320,9 +387,29 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
     }
   };
 
+  const handleDeleteRating = async ratingId => {
+    try {
+      // Delete the rating document from Firestore
+      await firestore()
+        .collection('posts')
+        .doc(item.id)
+        .collection('ratings')
+        .doc(ratingId)
+        .delete();
+
+      // Fetch the existing ratings again after deletion to refresh the UI
+      fetchExistingRatings();
+
+      console.log('Rating deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting rating:', error);
+    }
+  };
+
   const handleEmotion = () => {
     Alert.alert('This button add a tag to the post according to the emotion');
   };
+
   return (
     <GestureHandlerRootView>
       <Card key={item.id}>
@@ -402,6 +489,96 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
           ) : null}
         </InteractionWrapper>
 
+        {/* Rating button */}
+        <InteractionWrapper>
+          <Interaction onPress={() => setModalVisibleRating(true)}>
+            <MaterialIcons name="insert-emoticon" size={20} />
+            <InteractionText>Rate this post</InteractionText>
+          </Interaction>
+        </InteractionWrapper>
+
+        {/* Rating Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisibleRating}
+          onRequestClose={() => setModalVisibleRating(false)}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            }}>
+            <View
+              style={{
+                backgroundColor: 'white',
+                padding: 20,
+                borderRadius: 10,
+                width: '80%',
+              }}>
+              <ScrollView style={{marginBottom: 10}}>
+                {existingRatings.map((rating, index) => (
+                  <View
+                    key={index}
+                    style={{
+                      alignItems: 'center',
+                      marginBottom: 5,
+                    }}>
+                    <Text
+                      style={{marginRight: 5, color: 'black', fontSize: 20}}>
+                      {rating.fname} {rating.lname} gives {rating.rating} stars.
+                    </Text>
+                    {/* Delete button (rendered only for the owner) */}
+                    {user.uid === rating.userId && (
+                      <Button
+                        title="Delete rating"
+                        onPress={() => handleDeleteRating(rating.id)}
+                        color="#ff4500"
+                        style={{
+                          width: 120,
+                          height: 30,
+                          borderRadius: 5,
+                        }}
+                      />
+                    )}
+                  </View>
+                ))}
+              </ScrollView>
+
+              {/* Rating */}
+              <Text style={{marginBottom: 10, color: 'black'}}>
+                Rate this post:
+              </Text>
+              <AirbnbRating
+                count={5}
+                reviews={['Terrible', 'Bad', 'OK', 'Good', 'Great']}
+                defaultRating={newRating}
+                size={30}
+                onFinishRating={rating => setNewRating(rating)}
+              />
+
+              {/* Submit Button */}
+              <View style={{marginTop: 20, marginBottom: 20}}>
+                <Button
+                  title="Submit Rating"
+                  onPress={submitRating}
+                  color="#2e64e5"
+                />
+              </View>
+
+              {/* Close Button */}
+              <Button
+                title="Close"
+                onPress={() => setModalVisibleRating(false)}
+                color="#2e64e5"
+                style={{marginTop: 10}}
+              />
+            </View>
+          </View>
+        </Modal>
+
+        {/* Comment Modal */}
         <Modal
           animationType="slide"
           transparent={true}
@@ -437,7 +614,7 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
                       <Button
                         title="Delete comment"
                         onPress={() => handleDeleteComment(comment.id)}
-                        color="#40e0d0"
+                        color="#c71585"
                         style={{
                           width: 120,
                           height: 30,
