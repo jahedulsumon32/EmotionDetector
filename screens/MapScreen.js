@@ -1,21 +1,24 @@
 import React from 'react';
-import {View, Text, Button, StyleSheet} from 'react-native';
+import {View, StyleSheet} from 'react-native';
+import {WebView} from 'react-native-webview';
 
 const MapScreen = () => {
   return (
-    <View style={styles.container}>
-      <Text>Map Screen</Text>
-      <Button title="Click Here" onPress={() => alert('Button Clicked!')} />
-    </View>
+    <WebView
+      source={{
+        uri: 'https://www.google.com/maps/@22.4134923,91.8701207,15.28z?entry=ttu',
+      }}
+      style={styles.map}
+      geolocationEnabled={true} // Enable geolocation access
+      originWhitelist={['*']} // Allow all origins
+    />
   );
 };
 
-export default MapScreen;
-
 const styles = StyleSheet.create({
-  container: {
+  map: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
+
+export default MapScreen;

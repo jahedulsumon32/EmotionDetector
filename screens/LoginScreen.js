@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -8,18 +8,22 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  CheckBox,
 } from 'react-native';
 import FormInput from '../components/FormInput';
 import FormButton from '../components/FormButton';
 import SocialButton from '../components/SocialButton';
 import {AuthContext} from '../navigation/AuthProvider';
+import CustomCheckbox from '../components/CustomCheckbox';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 
 const LoginScreen = ({navigation}) => {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const [isValidEmail, setIsValidEmail] = useState(true); // State to track email validity
   const [isValidPassword, setIsValidPassword] = useState(true); // State to track password validity
-  const {login, googleLogin, phoneLogin} = useContext(AuthContext);
+  const {login, googleLogin, phoneLogin} = useContext(AuthContext); // Get isLoading and login function from AuthContext
+  const [rememberMe, setRememberMe] = useState(false); // State to track "Remember Me" checkbox
 
   // Function to validate email using regex
   const validateEmail = email => {
@@ -34,7 +38,7 @@ const LoginScreen = ({navigation}) => {
     return true;
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     // Check if email is valid before attempting login
     if (!validateEmail(email)) {
       setIsValidEmail(false);
@@ -52,7 +56,47 @@ const LoginScreen = ({navigation}) => {
     setIsValidPassword(true);
     setIsValidEmail(true);
     login(email, password);
+    if (rememberMe) {
+      // If "Remember Me" is checked, store email and password in AsyncStorage
+      try {
+        await AsyncStorage.setItem(
+          'userCredentials',
+          JSON.stringify({email, password}),
+        );
+      } catch (error) {
+        console.error('Error storing user credentials:', error);
+      }
+    }
   };
+
+  const handleLogout = async () => {
+    // Clear stored user credentials upon logout
+    try {
+      await AsyncStorage.removeItem('userCredentials');
+    } catch (error) {
+      console.error('Error clearing user credentials:', error);
+    }
+  };
+
+  // Function to load user credentials from AsyncStorage and auto-login
+  const autoLogin = async () => {
+    try {
+      const storedCredentials = await AsyncStorage.getItem('userCredentials');
+      if (storedCredentials) {
+        const {email: storedEmail, password: storedPassword} =
+          JSON.parse(storedCredentials);
+        setEmail(storedEmail);
+        setPassword(storedPassword);
+      }
+    } catch (error) {
+      console.error('Error auto-logging in:', error);
+    }
+  };
+
+  // Auto-login when component mounts
+  useEffect(() => {
+    autoLogin();
+  }, []);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -91,6 +135,13 @@ const LoginScreen = ({navigation}) => {
         placeholderText="Enter Your Password"
         iconType="lock"
         secureTextEntry={true}
+      />
+
+      {/* "Remember Me" Checkbox */}
+      <CustomCheckbox
+        label="Remember Me"
+        isChecked={rememberMe}
+        onChange={value => setRememberMe(value)}
       />
 
       <FormButton buttonTitle="Sign In" onPress={() => handleLogin()} />

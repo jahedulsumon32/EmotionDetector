@@ -31,7 +31,7 @@ const Drawer = createDrawerNavigator(); // Step 1: Create Drawer Navigator
 const FeedStack = ({navigation}) => (
   <Stack.Navigator>
     <Stack.Screen
-      name="Write New Post->"
+      name="Write New Post-->"
       component={HomeScreen}
       options={{
         headerTitleAlign: 'center',
