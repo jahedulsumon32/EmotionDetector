@@ -19,7 +19,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import HomeScreen from '../screens/HomeScreen';
 import ChatScreen from '../screens/ChatScreen';
 import MapScreen from '../screens/MapScreen';
-import ReviewScreen from '../screens/ReviewScreen';
+import VideosScreen from '../screens/VideosScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import AddPostScreen from '../screens/AddPostScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
@@ -171,11 +171,11 @@ const TabNavigator = () => (
 
     <Tab.Screen
       name="Review This App"
-      component={ReviewScreen}
+      component={VideosScreen}
       options={{
-        tabBarLabel: 'Review',
+        tabBarLabel: 'Videos',
         tabBarIcon: ({color, size}) => (
-          <Ionicons name="chatbox-ellipses-outline" color={color} size={size} />
+          <Ionicons name="logo-youtube" color={color} size={size} />
         ),
       }}
     />
@@ -213,7 +213,7 @@ const AppStack = () => {
         options={{title: '', drawerLabel: 'Home'}}
       />
       <Drawer.Screen name="Map S" component={MapScreen} />
-      <Drawer.Screen name="Review This App" component={ReviewScreen} />
+      <Drawer.Screen name="Review This App" component={VideosScreen} />
     </Drawer.Navigator>
   );
 };

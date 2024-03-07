@@ -1,7 +1,8 @@
+// WelcomeAnimation.js
 import React, {useEffect, useRef, useState} from 'react';
 import {Animated, Easing, StyleSheet, Text, View} from 'react-native';
 
-const ChatScreen = () => {
+const WelcomeAnimation = ({onAnimationComplete}) => {
   const [isVisible, setIsVisible] = useState(true);
   const spinValue = useRef(new Animated.Value(0)).current;
 
@@ -18,7 +19,7 @@ const ChatScreen = () => {
     // Hide the animation after 3000ms
     const timeout = setTimeout(() => {
       setIsVisible(false);
-      //onAnimationComplete(); // Notify parent component that animation is complete
+      onAnimationComplete(); // Notify parent component that animation is complete
     }, 3000);
 
     // Clear timeout on unmount
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#8a2be2', // Change background color to a nice blue
   },
   animationView: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Use a semi-transparent white background for the animation
+    backgroundColor: '#4285f4',
     paddingVertical: 20,
     paddingHorizontal: 30,
     borderRadius: 10,
@@ -64,9 +65,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1e90ff', // Match text color with the background for better contrast
+    color: 'white',
     marginBottom: 10,
   },
 });
 
-export default ChatScreen;
+export default WelcomeAnimation;

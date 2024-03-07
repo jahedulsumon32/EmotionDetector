@@ -6,7 +6,7 @@ const MapScreen = () => {
   return (
     <WebView
       source={{
-        uri: 'https://www.google.com/maps/@22.4134923,91.8701207,15.28z?entry=ttu',
+        uri: 'https://www.google.com/maps',
       }}
       style={styles.map}
       geolocationEnabled={true} // Enable geolocation access
