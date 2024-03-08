@@ -15,7 +15,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import Octicons from 'react-native-vector-icons/Octicons';
 
 import HomeScreen from '../screens/HomeScreen';
 import ChatScreen from '../screens/ChatScreen';
@@ -24,6 +24,7 @@ import VideosScreen from '../screens/VideosScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import AddPostScreen from '../screens/AddPostScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
+import CrystalReport from '../screens/CrystalReport';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -156,13 +157,18 @@ const TabNavigator = () => (
         ),
       }}
     />
+
     <Tab.Screen
-      name="Videos"
-      component={VideosScreen}
+      name="EmotionDetector"
+      component={ChatScreen}
       options={{
-        tabBarLabel: 'Videos',
+        tabBarLabel: 'Emotion',
         tabBarIcon: ({color, size}) => (
-          <Feather name="youtube" color={color} size={size} />
+          <MaterialCommunityIcons
+            name="emoticon-outline"
+            color={color}
+            size={size}
+          />
         ),
       }}
     />
@@ -179,16 +185,12 @@ const TabNavigator = () => (
     />
 
     <Tab.Screen
-      name="EmotionDetector"
-      component={ChatScreen}
+      name="Report"
+      component={CrystalReport}
       options={{
-        tabBarLabel: 'Emotion',
+        tabBarLabel: 'Report',
         tabBarIcon: ({color, size}) => (
-          <MaterialCommunityIcons
-            name="emoticon-outline"
-            color={color}
-            size={size}
-          />
+          <Octicons name="report" color={color} size={size} />
         ),
       }}
     />
@@ -215,7 +217,7 @@ const AppStack = () => {
         options={{title: '', drawerLabel: 'Home'}}
       />
       <Drawer.Screen name="Google Map" component={MapScreen} />
-      <Drawer.Screen name="Review This App" component={VideosScreen} />
+      <Drawer.Screen name="Videos" component={VideosScreen} />
     </Drawer.Navigator>
   );
 };
