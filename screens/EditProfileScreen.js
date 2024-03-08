@@ -127,7 +127,13 @@ const EditProfileScreen = () => {
   };
 
   const handleUsernameChange = async () => {
-    if (userName === '') return;
+    if (userName === '') {
+      Alert.alert(
+        'Username cannot be empty. If not empty, this username is yours.',
+      );
+      return;
+    }
+
     const trimmedUsername = userName.trim(); // Trim the username to remove leading and trailing spaces
 
     try {
@@ -139,6 +145,7 @@ const EditProfileScreen = () => {
       if (querySnapshot.empty) {
         // Username is available
         setIsUsernameAvailable(true);
+        Alert.alert('Username is available');
       } else {
         // Username is not available
         setIsUsernameAvailable(false);
@@ -451,7 +458,7 @@ const EditProfileScreen = () => {
             onPress={() => {
               handleUsernameChange();
             }}>
-            <Text style={styles.updateButtonText}>Update Username</Text>
+            <Text style={styles.updateButtonText}>Username Available?</Text>
           </TouchableOpacity>
 
           <View style={styles.action}>

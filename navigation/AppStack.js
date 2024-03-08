@@ -11,6 +11,7 @@ import {
   DrawerItem,
 } from '@react-navigation/drawer';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -34,6 +35,7 @@ const FeedStack = ({navigation}) => (
       name="Write New Post-->"
       component={HomeScreen}
       options={{
+        headerShown: false,
         headerTitleAlign: 'center',
         headerTitleStyle: {
           color: '#2e64e5',
@@ -46,20 +48,20 @@ const FeedStack = ({navigation}) => (
           shadowColor: '#fff',
           elevation: 0,
         },
-        headerRight: () => (
-          <View style={{marginRight: -15}}>
-            <AntDesign.Button
-              name="addfile"
-              size={22}
-              backgroundColor="#fff"
-              color="#2e64e5"
-              onPress={() => navigation.navigate('AddPost')}
-            />
-          </View>
-        ),
+        // headerRight: () => (
+        //   <View style={{marginRight: -15}}>
+        //     <AntDesign.Button
+        //       name="addfile"
+        //       size={22}
+        //       backgroundColor="#fff"
+        //       color="#2e64e5"
+        //       onPress={() => navigation.navigate('AddPost')}
+        //     />
+        //   </View>
+        // ),
       }}
     />
-    <Stack.Screen
+    {/* <Stack.Screen
       name="AddPost"
       component={AddPostScreen}
       options={{
@@ -77,7 +79,7 @@ const FeedStack = ({navigation}) => (
           </View>
         ),
       }}
-    />
+    /> */}
     <Stack.Screen
       name="HomeProfile"
       component={ProfileScreen}
@@ -155,38 +157,38 @@ const TabNavigator = () => (
       }}
     />
     <Tab.Screen
-      name="Detect Emotion From Text"
-      component={ChatScreen}
-      options={{
-        tabBarLabel: 'Detector',
-        tabBarIcon: ({color, size}) => (
-          <MaterialCommunityIcons
-            name="smoke-detector-outline"
-            color={color}
-            size={size}
-          />
-        ),
-      }}
-    />
-
-    <Tab.Screen
-      name="Review This App"
+      name="Videos"
       component={VideosScreen}
       options={{
         tabBarLabel: 'Videos',
         tabBarIcon: ({color, size}) => (
-          <Ionicons name="logo-youtube" color={color} size={size} />
+          <Feather name="youtube" color={color} size={size} />
         ),
       }}
     />
 
     <Tab.Screen
-      name="Map"
-      component={MapScreen}
+      name="Add New Post"
+      component={AddPostScreen}
       options={{
-        tabBarLabel: 'Map',
+        tabBarLabel: 'Post',
         tabBarIcon: ({color, size}) => (
-          <Feather name="map-pin" color={color} size={size} />
+          <MaterialIcons name="add" color={color} size={size} />
+        ),
+      }}
+    />
+
+    <Tab.Screen
+      name="EmotionDetector"
+      component={ChatScreen}
+      options={{
+        tabBarLabel: 'Emotion',
+        tabBarIcon: ({color, size}) => (
+          <MaterialCommunityIcons
+            name="emoticon-outline"
+            color={color}
+            size={size}
+          />
         ),
       }}
     />
@@ -212,7 +214,7 @@ const AppStack = () => {
         component={TabNavigator}
         options={{title: '', drawerLabel: 'Home'}}
       />
-      <Drawer.Screen name="Map S" component={MapScreen} />
+      <Drawer.Screen name="Google Map" component={MapScreen} />
       <Drawer.Screen name="Review This App" component={VideosScreen} />
     </Drawer.Navigator>
   );
