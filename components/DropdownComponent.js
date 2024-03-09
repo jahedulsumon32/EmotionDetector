@@ -119,7 +119,7 @@ const DropdownComponentScreen = () => {
           // inputSearchStyle={styles.inputSearchStyle}
           // iconStyle={styles.iconStyle}
           data={countryData}
-          search
+          // search
           maxHeight={300}
           labelField="label"
           valueField="value"
@@ -142,7 +142,7 @@ const DropdownComponentScreen = () => {
           // inputSearchStyle={styles.inputSearchStyle}
           // iconStyle={styles.iconStyle}
           data={stateData}
-          search
+          //search
           maxHeight={300}
           labelField="label"
           valueField="value"
@@ -165,7 +165,7 @@ const DropdownComponentScreen = () => {
           // inputSearchStyle={styles.inputSearchStyle}
           // iconStyle={styles.iconStyle}
           data={cityData}
-          search
+          //search
           maxHeight={300}
           labelField="label"
           valueField="value"

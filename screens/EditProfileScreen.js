@@ -18,7 +18,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
 import DateTimePicker from '@react-native-community/datetimepicker'; // Import DateTimePicker
 import RNPickerSelect from 'react-native-picker-select';
-import DropdownComponent from '../components/DropdownComponent';
+import axios from 'axios';
 
 import {AuthContext} from '../navigation/AuthProvider';
 import firestore from '@react-native-firebase/firestore';
@@ -34,97 +34,177 @@ const EditProfileScreen = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [userName, setUserName] = useState('');
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(false);
-  const [dateOfBirth, setDateOfBirth] = useState(new Date()); // Initialize date of birth state with current date
+  const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false); // State to manage visibility of date picker
-  const [selectedDivision, setSelectedDivision] = useState('');
-  const [selectedCity, setSelectedCity] = useState('');
-  const [cityOptions, setCityOptions] = useState([]);
+  // const [selectedDivision, setSelectedDivision] = useState('');
+  //const [selectedCity, setSelectedCity] = useState('');
+  //const [cityOptions, setCityOptions] = useState([]);
 
-  const handleDivisionChange = division => {
-    setSelectedDivision(division);
-    let cities = [];
-    switch (division) {
-      case 'Dhaka':
-        cities = [
-          'Dhaka',
-          'Gazipur',
-          'Narayanganj',
-          'Tongi',
-          'Savar',
-          'Dhamrai',
-          'Keraniganj',
-          'Narsingdi',
-          'Tangail',
-          'Mymensingh',
-          'Jamalpur',
-          'Kishoreganj',
-          'Manikganj',
-        ];
-        break;
-      case 'Chittagong':
-        cities = [
-          'Chittagong',
-          "Cox's Bazar",
-          'Feni',
-          'Rangamati',
-          'Bandarban',
-          'Khagrachhari',
-          'Comilla',
-          'Chandpur',
-          'Lakshmipur',
-          'Noakhali',
-          'Brahmanbaria',
-        ];
-        break;
-      case 'Rajshahi':
-        cities = [
-          'Rajshahi',
-          'Bogra',
-          'Pabna',
-          'Naogaon',
-          'Joypurhat',
-          'Sirajganj',
-          'Natore',
-          'Chapai Nawabganj',
-        ];
-        break;
-      case 'Khulna':
-        cities = ['Khulna', 'Jessore'];
-        break;
-      case 'Barishal':
-        cities = [
-          'Barishal',
-          'Bhola',
-          'Jhalokati',
-          'Patuakhali',
-          'Pirojpur',
-          'Barguna',
-        ];
-        break;
-      case 'Sylhet':
-        cities = ['Sylhet', 'Moulvibazar', 'Habiganj', 'Sunamganj'];
-        break;
-      case 'Rangpur':
-        cities = [
-          'Rangpur',
-          'Dinajpur',
-          'Gaibandha',
-          'Kurigram',
-          'Nilphamari',
-          'Lalmonirhat',
-          'Thakurgaon',
-          'Panchagarh',
-        ];
-        break;
-      case 'Mymensingh':
-        cities = ['Mymensingh', 'Jamalpur', 'Netrokona', 'Sherpur'];
-        break;
-      default:
-        cities = [];
-    }
-    setCityOptions(cities);
-    setSelectedCity('');
+  const [countryData, setCountryData] = useState([]);
+  const [stateData, setStateData] = useState([]);
+  const [cityData, setCityData] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedState, setSelectedState] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+
+  useEffect(() => {
+    const BASE_URL = 'https://api.countrystatecity.in/v1';
+    const config = {
+      method: 'get',
+      url: `${BASE_URL}/countries`,
+      headers: {
+        'X-CSCAPI-KEY':
+          'V2ZNbURQZ09ETDdORnk3eHduNm41YkpWbGV6WE9IdVNqVFl1Vjlrbg==',
+      },
+    };
+
+    axios(config)
+      .then(response => {
+        const countries = response.data.map(country => ({
+          value: country.iso2,
+          label: country.name,
+        }));
+        setCountryData(countries);
+        console.log(countries);
+      })
+      .catch(error => {
+        console.log('Error fetching countries:', error);
+      });
+  }, []);
+
+  const handleState = countryCode => {
+    const BASE_URL = 'https://api.countrystatecity.in/v1';
+    const config = {
+      method: 'get',
+      url: `${BASE_URL}/countries/${countryCode}/states`,
+      headers: {
+        'X-CSCAPI-KEY':
+          'V2ZNbURQZ09ETDdORnk3eHduNm41YkpWbGV6WE9IdVNqVFl1Vjlrbg==',
+      },
+    };
+
+    axios(config)
+      .then(response => {
+        const states = response.data.map(state => ({
+          value: state.iso2,
+          label: state.name,
+        }));
+        setStateData(states);
+      })
+      .catch(error => {
+        console.log('Error fetching states:', error);
+      });
   };
+
+  const handleCity = (countryCode, stateCode) => {
+    const BASE_URL = 'https://api.countrystatecity.in/v1';
+    const config = {
+      method: 'get',
+      url: `${BASE_URL}/countries/${countryCode}/states/${stateCode}/cities`,
+      headers: {
+        'X-CSCAPI-KEY':
+          'V2ZNbURQZ09ETDdORnk3eHduNm41YkpWbGV6WE9IdVNqVFl1Vjlrbg==',
+      },
+    };
+
+    axios(config)
+      .then(response => {
+        const cities = response.data.map(city => ({
+          value: city.id,
+          label: city.name,
+        }));
+        setCityData(cities);
+      })
+      .catch(error => {
+        console.log('Error fetching cities:', error);
+      });
+  };
+
+  // const handleDivisionChange = division => {
+  //   setSelectedDivision(division);
+  //   let cities = [];
+  //   switch (division) {
+  //     case 'Dhaka':
+  //       cities = [
+  //         'Dhaka',
+  //         'Gazipur',
+  //         'Narayanganj',
+  //         'Tongi',
+  //         'Savar',
+  //         'Dhamrai',
+  //         'Keraniganj',
+  //         'Narsingdi',
+  //         'Tangail',
+  //         'Mymensingh',
+  //         'Jamalpur',
+  //         'Kishoreganj',
+  //         'Manikganj',
+  //       ];
+  //       break;
+  //     case 'Chittagong':
+  //       cities = [
+  //         'Chittagong',
+  //         "Cox's Bazar",
+  //         'Feni',
+  //         'Rangamati',
+  //         'Bandarban',
+  //         'Khagrachhari',
+  //         'Comilla',
+  //         'Chandpur',
+  //         'Lakshmipur',
+  //         'Noakhali',
+  //         'Brahmanbaria',
+  //       ];
+  //       break;
+  //     case 'Rajshahi':
+  //       cities = [
+  //         'Rajshahi',
+  //         'Bogra',
+  //         'Pabna',
+  //         'Naogaon',
+  //         'Joypurhat',
+  //         'Sirajganj',
+  //         'Natore',
+  //         'Chapai Nawabganj',
+  //       ];
+  //       break;
+  //     case 'Khulna':
+  //       cities = ['Khulna', 'Jessore'];
+  //       break;
+  //     case 'Barishal':
+  //       cities = [
+  //         'Barishal',
+  //         'Bhola',
+  //         'Jhalokati',
+  //         'Patuakhali',
+  //         'Pirojpur',
+  //         'Barguna',
+  //       ];
+  //       break;
+  //     case 'Sylhet':
+  //       cities = ['Sylhet', 'Moulvibazar', 'Habiganj', 'Sunamganj'];
+  //       break;
+  //     case 'Rangpur':
+  //       cities = [
+  //         'Rangpur',
+  //         'Dinajpur',
+  //         'Gaibandha',
+  //         'Kurigram',
+  //         'Nilphamari',
+  //         'Lalmonirhat',
+  //         'Thakurgaon',
+  //         'Panchagarh',
+  //       ];
+  //       break;
+  //     case 'Mymensingh':
+  //       cities = ['Mymensingh', 'Jamalpur', 'Netrokona', 'Sherpur'];
+  //       break;
+  //     default:
+  //       cities = [];
+  //   }
+  //   setCityOptions(cities);
+  //   setSelectedCity('');
+  // };
 
   const handleUsernameChange = async () => {
     if (userName === '') {
@@ -192,11 +272,17 @@ const EditProfileScreen = () => {
         if (documentSnapshot.exists) {
           console.log('User Data', documentSnapshot.data());
           setUserData(documentSnapshot.data());
-          setSelectedDivision(documentSnapshot.data().division);
-          setSelectedCity(documentSnapshot.data().cities);
+          setSelectedCountry(documentSnapshot.data().country);
+          setSelectedState(documentSnapshot.data().state);
+          setSelectedCity(documentSnapshot.data().city);
           // Initialize dateOfBirth from Firestore if available or set it to the current date
-          const dob = documentSnapshot.data().dateofbirth || new Date();
-          setDateOfBirth(new Date(dob.seconds * 1000)); // Convert Firestore timestamp to Date
+          // Initialize dateOfBirth from Firestore if available or set it to the current date
+          const dob = documentSnapshot.data().dateofbirth;
+          if (dob) {
+            setDateOfBirth(new Date(dob.seconds * 1000)); // Convert Firestore timestamp to Date
+          } else {
+            setDateOfBirth(new Date()); // Set to current date if dateofbirth is not present
+          }
         }
       })
       .catch(error => {
@@ -255,10 +341,10 @@ const EditProfileScreen = () => {
     if (userData.lname) updateData.lname = userData.lname;
     if (userData.about) updateData.about = userData.about;
     if (userData.phone) updateData.phone = userData.phone;
-    if (userData.country) updateData.country = userData.country;
     updateData.dateofbirth = dateOfBirth;
-    updateData.division = selectedDivision;
-    updateData.cities = selectedCity;
+    updateData.country = selectedCountry;
+    updateData.state = selectedState;
+    updateData.city = selectedCity;
 
     await firestore()
       .collection('users')
@@ -510,7 +596,7 @@ const EditProfileScreen = () => {
             />
           </View>
 
-          <View style={styles.action}>
+          {/* <View style={styles.action}>
             <FontAwesome name="globe" color="#333333" size={20} />
             <TextInput
               placeholder="Country"
@@ -520,7 +606,7 @@ const EditProfileScreen = () => {
               onChangeText={txt => setUserData({...userData, country: txt})}
               style={styles.textInput}
             />
-          </View>
+          </View> */}
           {/* <View style={styles.action}>
             <MaterialCommunityIcons
               name="map-marker-outline"
@@ -538,7 +624,7 @@ const EditProfileScreen = () => {
           </View> */}
 
           {/* Multiple Drop Down Button*/}
-          <View>
+          {/* <View>
             <MaterialCommunityIcons
               name="map-marker-outline"
               color="#333333"
@@ -580,6 +666,52 @@ const EditProfileScreen = () => {
                 inputAndroid: styles.textInput,
               }}
             />
+          </View> */}
+          <View>
+            <FontAwesome name="globe" color="#333333" size={20} />
+            <RNPickerSelect
+              placeholder={{label: 'Select Country', value: null}}
+              items={countryData}
+              value={selectedCountry}
+              onValueChange={value => {
+                setSelectedCountry(value);
+                handleState(value);
+              }}
+              style={styles.textInput}
+            />
+          </View>
+
+          <View>
+            <MaterialCommunityIcons
+              name="map-marker-outline"
+              color="#333333"
+              size={20}
+            />
+            <RNPickerSelect
+              placeholder={{label: 'Select State', value: null}}
+              items={stateData}
+              value={selectedState}
+              onValueChange={value => {
+                setSelectedState(value);
+                handleCity(selectedCountry, value);
+              }}
+              style={styles.textInput}
+            />
+          </View>
+
+          <View>
+            <MaterialCommunityIcons
+              name="map-marker-outline"
+              color="#333333"
+              size={20}
+            />
+            <RNPickerSelect
+              placeholder={{label: 'Select City', value: null}}
+              items={cityData}
+              value={selectedCity}
+              onValueChange={value => setSelectedCity(value)}
+              style={styles.textInput}
+            />
           </View>
 
           <View>
@@ -594,7 +726,7 @@ const EditProfileScreen = () => {
               />
               <Text style={styles.dateText}>
                 <Text>Date Of Birth: </Text>
-                {dateOfBirth.toLocaleDateString()}
+                {dateOfBirth ? dateOfBirth.toLocaleDateString() : 'Select Date'}
               </Text>
             </TouchableOpacity>
 
@@ -661,6 +793,14 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: 'bold',
     color: 'white',
+  },
+  dropdownContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f2f2f2',
+    paddingBottom: 5,
+    marginBottom: 10,
   },
   action: {
     flexDirection: 'row',
