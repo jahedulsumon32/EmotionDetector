@@ -6,6 +6,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import ProgressiveImage from './ProgressiveImage';
 import {useFocusEffect} from '@react-navigation/native'; // Import useFocusEffect hook
 import {AirbnbRating} from 'react-native-ratings';
+import axios from 'axios';
 
 import {
   Container,
@@ -39,6 +40,7 @@ import {
   TextInput,
   Text,
   Button,
+  StyleSheet,
 } from 'react-native';
 
 const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
@@ -57,10 +59,12 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
   const [newRating, setNewRating] = useState(0);
   const [modalVisibleRating, setModalVisibleRating] = useState(false);
   const [userHasRated, setUserHasRated] = useState(false); // State to track if user has already rated
+  const [emotionLoading, setEmotionLoading] = useState(false);
+  const [detectedEmotion, setDetectedEmotion] = useState(null);
 
   // Pagination Control
   const [currentPage, setCurrentPage] = useState(1);
-  const [commentsPerPage] = useState(10);
+  const [commentsPerPage] = useState(5);
 
   useEffect(() => {
     fetchComments();
@@ -449,8 +453,48 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
     }
   };
 
-  const handleEmotion = () => {
-    Alert.alert('This button add a tag to the post according to the emotion');
+  const handleEmotion = async () => {
+    try {
+      // Show loader
+      setEmotionLoading(true);
+
+      // Perform emotion detection
+      const options = {
+        method: 'POST',
+        url: 'https://emodex-emotions-analysis.p.rapidapi.com/rapidapi/emotions',
+        headers: {
+          'content-type': 'application/json',
+          'X-RapidAPI-Key':
+            'ab2f77f9cfmshaef089c6f33afd2p1225abjsn3969ad40952f',
+          'X-RapidAPI-Host': 'emodex-emotions-analysis.p.rapidapi.com',
+        },
+        data: {
+          sentence: item.post, // Use the post text for emotion detection
+        },
+      };
+
+      const response = await axios.request(options);
+      const {sentence} = response.data;
+
+      // Remove the 'text' key pair
+      delete sentence.text;
+
+      // Find the emotion with the highest probability
+      const maxEmotion = Object.keys(sentence).reduce((a, b) =>
+        sentence[a] > sentence[b] ? a : b,
+      );
+
+      // Hide loader
+      setEmotionLoading(false);
+
+      // Show tag of the detected emotion
+      setDetectedEmotion(maxEmotion);
+    } catch (error) {
+      console.error('Error detecting emotion:', error);
+      // Hide loader and set detected emotion to null in case of error
+      setEmotionLoading(false);
+      setDetectedEmotion(null);
+    }
   };
 
   return (
@@ -521,7 +565,9 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
           {/* Emtion Button */}
           <Interaction onPress={handleEmotion}>
             <MaterialIcons name="insert-emoticon" size={20} />
-            <InteractionText>{emotion}</InteractionText>
+            <InteractionText>
+              {emotionLoading ? 'Detecting...' : 'Emotion'}
+            </InteractionText>
           </Interaction>
 
           {/* Delete button */}
@@ -531,6 +577,13 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
             </Interaction>
           ) : null}
         </InteractionWrapper>
+
+        {/* Show detected emotion tag */}
+        {detectedEmotion && !emotionLoading && (
+          <View style={styles.detectedEmotionContainer}>
+            <Text style={styles.detectedEmotionText}>{detectedEmotion}</Text>
+          </View>
+        )}
 
         {/* Rating button */}
         <InteractionWrapper>
@@ -754,3 +807,22 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
 };
 
 export default PostCard;
+
+// Inside styles constant:
+const styles = StyleSheet.create({
+  detectedEmotionContainer: {
+    width: 100,
+    marginVertical: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+    borderColor: '#000', // Black border color
+    borderWidth: 1, // Border width
+  },
+  detectedEmotionText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+});

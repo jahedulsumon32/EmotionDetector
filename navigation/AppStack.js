@@ -18,13 +18,13 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Octicons from 'react-native-vector-icons/Octicons';
 
 import HomeScreen from '../screens/HomeScreen';
-import ChatScreen from '../screens/ChatScreen';
 import MapScreen from '../screens/MapScreen';
 import VideosScreen from '../screens/VideosScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import AddPostScreen from '../screens/AddPostScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import CrystalReport from '../screens/CrystalReport';
+import EmotionDetectionScreen from '../screens/EmotionDetectionScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -160,7 +160,7 @@ const TabNavigator = () => (
 
     <Tab.Screen
       name="EmotionDetector"
-      component={ChatScreen}
+      component={EmotionDetectionScreen}
       options={{
         tabBarLabel: 'Emotion',
         tabBarIcon: ({color, size}) => (
@@ -214,7 +214,10 @@ const AppStack = () => {
       <Drawer.Screen
         name="Drawer Home"
         component={TabNavigator}
-        options={{title: '', drawerLabel: 'Home'}}
+        options={{
+          title: 'EmoSphere',
+          drawerLabel: 'Home',
+        }}
       />
       <Drawer.Screen name="Google Map" component={MapScreen} />
       <Drawer.Screen name="Videos" component={VideosScreen} />
