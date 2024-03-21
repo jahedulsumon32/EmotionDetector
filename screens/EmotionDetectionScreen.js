@@ -59,13 +59,19 @@ const EmotionDetectionScreen = () => {
     <View style={styles.container}>
       <TextInput
         style={styles.input}
+        multiline={true}
+        textAlignVertical="top"
         placeholder="Enter text to detect emotion.."
         onChangeText={setText}
         value={text}
       />
       <View style={styles.buttonContainer}>
-        <Button title="Detect Emotion" onPress={detectEmotion} />
-        <Button title="Clear All" onPress={clearAll} />
+        <Button
+          color="#8a2be2" // Color the button
+          title="Detect Emotion"
+          onPress={detectEmotion}
+        />
+        <Button title="Clear All" onPress={clearAll} color="#8a2be2" />
       </View>
       {loading ? (
         <ActivityIndicator style={styles.loader} size="large" color="#0000ff" />
@@ -88,10 +94,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   input: {
-    height: 100,
     width: '100%',
     borderWidth: 3,
     borderColor: 'black',
+    borderRadius: 20,
     padding: 10,
     marginBottom: 20,
   },

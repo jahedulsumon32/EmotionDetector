@@ -127,3 +127,7 @@ export const AuthProvider = ({children}) => {
     </AuthContext.Provider>
   );
 };
+
+// In summary, <AuthContext.Provider> serves as the provider component for the AuthContext
+//  context, allowing
+//  its child components to access authentication-related state and functions provided by the AuthProvider.

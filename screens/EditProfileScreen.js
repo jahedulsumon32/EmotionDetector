@@ -9,6 +9,7 @@ import {
   Alert,
   Button,
   Platform,
+  Modal,
 } from 'react-native';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -46,6 +47,8 @@ const EditProfileScreen = () => {
   const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedState, setSelectedState] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
+  // State to manage the visibility of the modal
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const BASE_URL = 'https://api.countrystatecity.in/v1';
@@ -424,7 +427,7 @@ const EditProfileScreen = () => {
         console.log(image);
         const imageUri = Platform.OS === 'ios' ? image.sourceURL : image.path;
         setImage(imageUri);
-        setShowOptions(false);
+        setShowModal(false);
       })
       .catch(error => {
         console.log('User cancelled image selection');
@@ -443,7 +446,7 @@ const EditProfileScreen = () => {
         console.log(image);
         const imageUri = Platform.OS === 'ios' ? image.sourceURL : image.path;
         setImage(imageUri);
-        setShowOptions(false);
+        setShowModal(false);
       })
       .catch(error => {
         console.log('User cancelled image selection');
@@ -456,7 +459,7 @@ const EditProfileScreen = () => {
       <ScrollView>
         <View style={styles.container}>
           <TouchableOpacity
-            onPress={() => setShowOptions(true)}
+            onPress={() => setShowModal(true)}
             style={{alignItems: 'center'}}>
             <View style={styles.imageContainer}>
               <ImageBackground
@@ -490,30 +493,45 @@ const EditProfileScreen = () => {
                     }}
                   />
                 </View>
-                {showOptions && (
-                  <View style={styles.overlay}>
-                    <TouchableOpacity
-                      style={styles.overlayButton}
-                      onPress={takePhotoFromCamera}>
-                      <Text style={styles.overlayButtonText}>Take Photo</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.overlayButton}
-                      onPress={choosePhotoFromLibrary}>
-                      <Text style={styles.overlayButtonText}>
-                        Choose From Library
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.overlayButton}
-                      onPress={() => setShowOptions(false)}>
-                      <Text style={styles.overlayButtonText}>Cancel</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
               </ImageBackground>
             </View>
           </TouchableOpacity>
+
+          {/* modal for imagw selection */}
+          {showModal && (
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={showModal}
+              onRequestClose={() => setShowModal(false)}>
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <View style={styles.buttonContainer}>
+                    <Button
+                      title="Take Photo"
+                      onPress={takePhotoFromCamera}
+                      color="#8a2be2"
+                    />
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <Button
+                      title="Choose From Library"
+                      onPress={choosePhotoFromLibrary}
+                      color="#8a2be2"
+                    />
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <Button
+                      title="Cancel"
+                      onPress={() => setShowModal(false)}
+                      color="#8a2be2"
+                    />
+                  </View>
+                </View>
+              </View>
+            </Modal>
+          )}
+
           <Text
             style={{
               marginTop: 5,
@@ -761,6 +779,22 @@ const EditProfileScreen = () => {
 export default EditProfileScreen;
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    marginBottom: 20,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  buttonContainer: {
+    marginVertical: 10,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -863,7 +897,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   updateButton: {
-    backgroundColor: '#2e64e5',
+    backgroundColor: '#8a2be2',
     paddingVertical: 10,
     borderRadius: 10,
     marginTop: 20,
@@ -874,7 +908,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   updateUsernameButton: {
-    backgroundColor: '#2e64e5',
+    backgroundColor: '#8a2be2',
     paddingVertical: 10,
     borderRadius: 10,
     marginBottom: 60,

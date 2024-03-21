@@ -30,6 +30,7 @@ const CrystalReport = ({navigation, route}) => {
           data.dateofbirth = data.dateofbirth.toDate().toDateString();
         }
         setUserData(data);
+        console.log(data);
       }
     } catch (error) {
       console.error('Error fetching user data: ', error);
@@ -103,14 +104,14 @@ const CrystalReport = ({navigation, route}) => {
               <Text style={styles.label}>Date of Birth:</Text>
               <Text style={styles.text}>{userData?.dateofbirth}</Text>
             </View>
-            <View style={styles.userInfo}>
+            {/* <View style={styles.userInfo}>
               <Text style={styles.label}>Division:</Text>
-              <Text style={styles.text}>{userData?.division}</Text>
+              <Text style={styles.text}>{userData?.state}</Text>
             </View>
             <View style={styles.userInfo}>
               <Text style={styles.label}>City:</Text>
-              <Text style={styles.text}>{userData?.cities}</Text>
-            </View>
+              <Text style={styles.text}>{userData?.city}</Text>
+            </View> */}
             <View style={styles.userInfo}>
               <Text style={styles.label}>No. of post:</Text>
               <Text style={styles.text}>{posts.length}</Text>

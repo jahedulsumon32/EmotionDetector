@@ -25,6 +25,7 @@ import AddPostScreen from '../screens/AddPostScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import CrystalReport from '../screens/CrystalReport';
 import EmotionDetectionScreen from '../screens/EmotionDetectionScreen';
+import EmotionDetectionScreen2 from '../screens/EmotionDetectionScreen2';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -219,8 +220,10 @@ const AppStack = () => {
           drawerLabel: 'Home',
         }}
       />
+
       <Drawer.Screen name="Google Map" component={MapScreen} />
       <Drawer.Screen name="Videos" component={VideosScreen} />
+      {/* <Drawer.Screen name="Detector" component={EmotionDetectionScreen2} /> */}
     </Drawer.Navigator>
   );
 };

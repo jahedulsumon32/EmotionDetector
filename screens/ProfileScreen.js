@@ -13,6 +13,7 @@ import FormButton from '../components/FormButton';
 import {AuthContext} from '../navigation/AuthProvider';
 
 import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
 import PostCard from '../components/PostCard';
 
 const ProfileScreen = ({navigation, route}) => {
