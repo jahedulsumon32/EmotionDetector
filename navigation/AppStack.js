@@ -27,6 +27,7 @@ import CrystalReport from '../screens/CrystalReport';
 import EmotionDetectionScreen from '../screens/EmotionDetectionScreen';
 import EmotionDetectionScreen2 from '../screens/EmotionDetectionScreen2';
 import CrystalReport2 from '../screens/CrystalReport2';
+import GraphQL from '../screens/GraphQL';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -225,6 +226,7 @@ const AppStack = () => {
       <Drawer.Screen name="Google Map" component={MapScreen} />
       <Drawer.Screen name="Videos" component={VideosScreen} />
       {/* <Drawer.Screen name="Detector" component={EmotionDetectionScreen2} /> */}
+      <Drawer.Screen name="Find Country code and Capital" component={GraphQL} />
     </Drawer.Navigator>
   );
 };
