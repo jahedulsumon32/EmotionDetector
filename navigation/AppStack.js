@@ -26,6 +26,7 @@ import EditProfileScreen from '../screens/EditProfileScreen';
 import CrystalReport from '../screens/CrystalReport';
 import EmotionDetectionScreen from '../screens/EmotionDetectionScreen';
 import EmotionDetectionScreen2 from '../screens/EmotionDetectionScreen2';
+import CrystalReport2 from '../screens/CrystalReport2';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -187,7 +188,7 @@ const TabNavigator = () => (
 
     <Tab.Screen
       name="Report"
-      component={CrystalReport}
+      component={CrystalReport2}
       options={{
         tabBarLabel: 'Report',
         tabBarIcon: ({color, size}) => (
