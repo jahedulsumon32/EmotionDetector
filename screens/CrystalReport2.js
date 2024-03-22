@@ -9,14 +9,17 @@ import {
 } from 'react-native';
 import {AuthContext} from '../navigation/AuthProvider';
 import firestore from '@react-native-firebase/firestore';
-import {BarChart} from 'react-native-chart-kit';
+import {BarChart, PieChart} from 'react-native-chart-kit';
 import {Dimensions} from 'react-native';
+
 const screenWidth = Dimensions.get('window').width;
 
 const CrystalReport2 = ({navigation, route}) => {
   const {user, logout} = useContext(AuthContext);
 
   const [monthlyPosts, setMonthlyPosts] = useState([]);
+  const [likesCount, setLikesCount] = useState(0);
+  const [dislikesCount, setDislikesCount] = useState(0);
   const [showUserInfo, setShowUserInfo] = useState(false);
 
   const fetchUserPosts = async () => {
@@ -26,12 +29,45 @@ const CrystalReport2 = ({navigation, route}) => {
         .where('userId', '==', route.params ? route.params.userId : user.uid)
         .orderBy('postTime', 'desc')
         .get();
-      const userPosts = snapshot.docs.map(doc => doc.data());
+
+      const userPosts = snapshot.docs.map(doc => ({
+        id: doc.id,
+        data: doc.data(),
+      }));
+
+      let likesCount = 0;
+      let dislikesCount = 0;
+
+      // Iterate over each user post
+      for (const post of userPosts) {
+        const postId = post.id;
+        // Fetch likes for the current post
+        const likesSnapshot = await firestore()
+          .collection('posts')
+          .doc(postId)
+          .collection('likes')
+          .get();
+        likesCount += likesSnapshot.size;
+
+        // Fetch dislikes for the current post
+        const dislikesSnapshot = await firestore()
+          .collection('posts')
+          .doc(postId)
+          .collection('dislikes')
+          .get();
+        dislikesCount += dislikesSnapshot.size;
+      }
+
+      console.log('Total Likes:', likesCount);
+      console.log('Total Dislikes:', dislikesCount);
+
+      setLikesCount(likesCount);
+      setDislikesCount(dislikesCount);
 
       // Calculate monthly posts
       const monthlyPostsData = new Array(12).fill(0);
       userPosts.forEach(post => {
-        const postDate = post.postTime.toDate();
+        const postDate = post.data.postTime.toDate();
         const month = postDate.getMonth();
         monthlyPostsData[month]++;
       });
@@ -50,6 +86,7 @@ const CrystalReport2 = ({navigation, route}) => {
     // Fetch user posts when the component mounts
     fetchUserPosts();
   }, []);
+
   // Define an array of colors for the bars
   const barColors = [
     '#FF5733',
@@ -81,60 +118,101 @@ const CrystalReport2 = ({navigation, route}) => {
         onRequestClose={() => setShowUserInfo(false)}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <BarChart
-              data={{
-                labels: [
-                  'Jan',
-                  'Feb',
-                  'Mar',
-                  'Apr',
-                  'May',
-                  'Jun',
-                  'Jul',
-                  'Aug',
-                  'Sep',
-                  'Oct',
-                  'Nov',
-                  'Dec',
-                ],
-                datasets: [
-                  {
-                    data: monthlyPosts,
+            <View style={styles.chartContainer}>
+              <BarChart
+                data={{
+                  labels: [
+                    'Jan',
+                    'Feb',
+                    'Mar',
+                    'Apr',
+                    'May',
+                    'Jun',
+                    'Jul',
+                    'Aug',
+                    'Sep',
+                    'Oct',
+                    'Nov',
+                    'Dec',
+                  ],
+                  datasets: [
+                    {
+                      data: monthlyPosts,
+                    },
+                  ],
+                }}
+                width={screenWidth}
+                height={200}
+                yAxisLabel="#"
+                chartConfig={{
+                  backgroundColor: '#f0f8ff',
+                  backgroundGradientFrom: '#f0f8ff',
+                  backgroundGradientTo: '#f0f8ff',
+                  decimalPlaces: 0,
+                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  style: {
+                    borderRadius: 16,
                   },
-                ],
-              }}
-              width={screenWidth}
-              height={400}
-              yAxisLabel="#"
-              chartConfig={{
-                backgroundColor: '#f0f8ff',
-                backgroundGradientFrom: '#f0f8ff',
-                backgroundGradientTo: '#f0f8ff',
-                decimalPlaces: 0,
-                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                style: {
+                  barPercentage: 0.5,
+                  propsForLabels: {
+                    fontSize: 12,
+                  },
+                  propsForVerticalLabels: {
+                    fontSize: 12,
+                  },
+                  propsForHorizontalLabels: {
+                    fontSize: 12,
+                  },
+                  fillShadowGradient: '#0000ff',
+                  barColors: barColors,
+                }}
+                style={{
+                  marginVertical: 8,
                   borderRadius: 16,
-                },
-                barPercentage: 0.5, // Adjust space between bars
-                propsForLabels: {
-                  fontSize: 12, // Adjust label font size
-                },
-                propsForVerticalLabels: {
-                  fontSize: 12, // Adjust vertical label font size
-                },
-                propsForHorizontalLabels: {
-                  fontSize: 12, // Adjust horizontal label font size
-                },
-                fillShadowGradient: '#0000ff', // Color of the bars
-                barColors: barColors, // Set colors for each bar
-              }}
-              style={{
-                marginVertical: 8,
-                borderRadius: 16,
-              }}
-            />
-            <View>
-              <Text style={{color: 'black'}}>No. of Post per month by me</Text>
+                }}
+              />
+              <View style={styles.chartTitle}>
+                <Text style={{color: 'black'}}>
+                  No. of Posts per month by me
+                </Text>
+              </View>
+              <View style={styles.pieChartContainer}>
+                <PieChart
+                  data={[
+                    {
+                      name: 'Likes',
+                      count: likesCount,
+                      color: '#4CAF50',
+                      legendFontColor: '#7F7F7F',
+                      legendFontSize: 15,
+                    },
+                    {
+                      name: 'Dislikes',
+                      count: dislikesCount,
+                      color: '#F44336',
+                      legendFontColor: '#7F7F7F',
+                      legendFontSize: 15,
+                    },
+                  ]}
+                  width={screenWidth}
+                  height={220}
+                  chartConfig={{
+                    backgroundColor: '#f0f8ff',
+                    backgroundGradientFrom: '#f0f8ff',
+                    backgroundGradientTo: '#f0f8ff',
+                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  }}
+                  accessor="count"
+                  backgroundColor="transparent"
+                  paddingLeft="15"
+                  absolute
+                />
+              </View>
+              <View style={styles.likesDislikes}>
+                <Text style={{color: 'black'}}>
+                  Likes: {likesCount}, Dislikes: {dislikesCount}
+                </Text>
+              </View>
             </View>
             <Pressable
               style={[styles.button, styles.buttonClose]}
@@ -195,6 +273,20 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
+  chartContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chartTitle: {
+    marginTop: 10,
+  },
+  pieChartContainer: {
+    marginTop: 10,
+  },
+  likesDislikes: {
+    marginTop: 10,
+  },
   button: {
     borderRadius: 20,
     padding: 10,
@@ -213,4 +305,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
 export default CrystalReport2;

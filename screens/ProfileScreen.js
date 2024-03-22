@@ -142,19 +142,37 @@ const ProfileScreen = ({navigation, route}) => {
       });
   };
 
-  const deleteFirestoreData = postId => {
-    firestore()
-      .collection('posts')
-      .doc(postId)
-      .delete()
-      .then(() => {
-        Alert.alert(
-          'Post deleted!',
-          'Your post has been deleted successfully!',
-        );
-        setDeleted(true);
-      })
-      .catch(e => console.log('Error deleting posst.', e));
+  const deleteFirestoreData = async postId => {
+    try {
+      // Create a batched write operation
+      const batch = firestore().batch();
+
+      // Add the main post document deletion to the batch
+      const postRef = firestore().collection('posts').doc(postId);
+      batch.delete(postRef);
+
+      // Fetch and delete each subcollection associated with the post
+      const subcollections = ['likes', 'dislikes', 'ratings'];
+      for (const subcollection of subcollections) {
+        const subcollectionRef = postRef.collection(subcollection);
+        const snapshot = await subcollectionRef.get();
+        snapshot.forEach(doc => {
+          batch.delete(subcollectionRef.doc(doc.id));
+        });
+      }
+
+      // Commit the batched write operation
+      await batch.commit();
+
+      Alert.alert(
+        'Post deleted!',
+        'Your post and associated data have been deleted successfully!',
+      );
+      setDeleted(true);
+    } catch (error) {
+      console.error('Error deleting post and its subcollections:', error);
+      Alert.alert('Error', 'An error occurred while deleting the post.');
+    }
   };
 
   return (
