@@ -28,6 +28,7 @@ import EmotionDetectionScreen from '../screens/EmotionDetectionScreen';
 import EmotionDetectionScreen2 from '../screens/EmotionDetectionScreen2';
 import CrystalReport2 from '../screens/CrystalReport2';
 import GraphQL from '../screens/GraphQL';
+import WelcomeAnimation2 from '../screens/WelcomeAnimation2';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -227,6 +228,7 @@ const AppStack = () => {
       <Drawer.Screen name="Videos" component={VideosScreen} />
       {/* <Drawer.Screen name="Detector" component={EmotionDetectionScreen2} /> */}
       <Drawer.Screen name="Find Country code and Capital" component={GraphQL} />
+      {/* <Drawer.Screen name="Animation" component={WelcomeAnimation2} /> */}
     </Drawer.Navigator>
   );
 };

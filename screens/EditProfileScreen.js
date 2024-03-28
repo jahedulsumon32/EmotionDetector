@@ -33,8 +33,8 @@ const EditProfileScreen = () => {
   const [transferred, setTransferred] = useState(0);
   const [userData, setUserData] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [isUsernameAvailable, setIsUsernameAvailable] = useState(false);
+  // const [userName, setUserName] = useState('');
+  // const [isUsernameAvailable, setIsUsernameAvailable] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false); // State to manage visibility of date picker
   // const [selectedDivision, setSelectedDivision] = useState('');
@@ -209,36 +209,36 @@ const EditProfileScreen = () => {
   //   setSelectedCity('');
   // };
 
-  const handleUsernameChange = async () => {
-    if (userName === '') {
-      Alert.alert(
-        'Username cannot be empty. If not empty, this username is yours.',
-      );
-      return;
-    }
+  // const handleUsernameChange = async () => {
+  //   if (userName === '') {
+  //     Alert.alert(
+  //       'Username cannot be empty. If not empty, this username is yours.',
+  //     );
+  //     return;
+  //   }
 
-    const trimmedUsername = userName.trim(); // Trim the username to remove leading and trailing spaces
+  //   const trimmedUsername = userName.trim(); // Trim the username to remove leading and trailing spaces
 
-    try {
-      const querySnapshot = await firestore()
-        .collection('users')
-        .where('username', '==', trimmedUsername)
-        .get();
+  //   try {
+  //     const querySnapshot = await firestore()
+  //       .collection('users')
+  //       .where('username', '==', trimmedUsername)
+  //       .get();
 
-      if (querySnapshot.empty) {
-        // Username is available
-        setIsUsernameAvailable(true);
-        Alert.alert('Username is available');
-      } else {
-        // Username is not available
-        setIsUsernameAvailable(false);
-        Alert.alert('Username is not available');
-        getUser();
-      }
-    } catch (error) {
-      console.error('Error checking username availability: ', error);
-    }
-  };
+  //     if (querySnapshot.empty) {
+  //       // Username is available
+  //       setIsUsernameAvailable(true);
+  //       Alert.alert('Username is available');
+  //     } else {
+  //       // Username is not available
+  //       setIsUsernameAvailable(false);
+  //       Alert.alert('Username is not available');
+  //       getUser();
+  //     }
+  //   } catch (error) {
+  //     console.error('Error checking username availability: ', error);
+  //   }
+  // };
 
   // const isUsernameUnique = async username1 => {
   //   try {
@@ -339,7 +339,7 @@ const EditProfileScreen = () => {
     };
 
     // Add other fields if they are defined
-    if (userData.username) updateData.username = userData.username;
+    //if (userData.username) updateData.username = userData.username;
     if (userData.fname) updateData.fname = userData.fname;
     if (userData.lname) updateData.lname = userData.lname;
     if (userData.about) updateData.about = userData.about;
@@ -543,7 +543,7 @@ const EditProfileScreen = () => {
             {userData ? userData.fname : ''} {userData ? userData.lname : ''}
           </Text>
 
-          <View style={styles.action}>
+          {/* <View style={styles.action}>
             <FontAwesome name="user" color="#333333" size={20} />
             <TextInput
               placeholder="Enter a username"
@@ -556,14 +556,14 @@ const EditProfileScreen = () => {
               }}
               style={styles.textInput}
             />
-          </View>
-          <TouchableOpacity
+          </View> */}
+          {/* <TouchableOpacity
             style={styles.updateUsernameButton}
             onPress={() => {
               handleUsernameChange();
             }}>
             <Text style={styles.updateButtonText}>Username Available?</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <View style={styles.action}>
             <FontAwesome name="user-o" color="#333333" size={20} />

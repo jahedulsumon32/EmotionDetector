@@ -3,6 +3,7 @@ import {View, Text, Image, TouchableOpacity, StyleSheet} from 'react-native';
 
 import Onboarding from 'react-native-onboarding-swiper';
 import WelcomeAnimation from './WelcomeAnimation'; // Import your WelcomeAnimation component
+import WelcomeAnimation2 from './WelcomeAnimation2';
 
 const Dots = ({selected}) => {
   let backgroundColor;
@@ -49,7 +50,7 @@ const OnboardingScreen = ({navigation}) => {
   return (
     <>
       {!showOnboarding && (
-        <WelcomeAnimation onAnimationComplete={handleAnimationComplete} />
+        <WelcomeAnimation2 onAnimationComplete={handleAnimationComplete} />
       )}
       {showOnboarding && (
         <Onboarding

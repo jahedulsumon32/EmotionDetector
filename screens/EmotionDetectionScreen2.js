@@ -1,94 +1,204 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, TextInput, Button} from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
 import {
-  Tensor,
-  TensorflowModel,
-  useTensorflowModel,
-  loadTensorflowModel,
-} from 'react-native-fast-tflite';
+  View,
+  TextInput,
+  Button,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import * as tf from '@tensorflow/tfjs';
+import '@tensorflow/tfjs-core';
+import '@tensorflow/tfjs-react-native';
+import Tokenizr from 'tokenizr'; // Import Tokenizr library
+import axios from 'axios'; // Import Axios library
 
-function tensorToString(tensor) {
-  return `\n  - ${tensor.dataType} ${tensor.name}[${tensor.shape}]`;
-}
+const source = {
+  model:
+    'https://storage.googleapis.com/tfjs-models/tfjs/sentiment_cnn_v1/model.json',
+  metadata:
+    'https://storage.googleapis.com/tfjs-models/tfjs/sentiment_cnn_v1/metadata.json',
+};
 
-function modelToString(model) {
-  return (
-    `TFLite Model (${model.delegate}):\n` +
-    `- Inputs: ${model.inputs.map(tensorToString).join('')}\n` +
-    `- Outputs: ${model.outputs.map(tensorToString).join('')}`
-  );
-}
-
-export default function App() {
+const EmotionDetectionScreen2 = () => {
   const [text, setText] = useState('');
   const [emotion, setEmotion] = useState('');
   const [loading, setLoading] = useState(false);
-  const [model, setModel] = useState(null);
+
+  const metadata = {};
+  const model = null; // Initialize model as needed
 
   useEffect(() => {
+    const loadModel = async () => {
+      try {
+        setLoading(true);
+        await tf.ready();
+
+        // Load model
+        model.current = await tf.loadLayersModel(source.model);
+        const metadataJson = await fetch(source.metadata);
+        metadata.current = await metadataJson.json();
+        console.log(model.current);
+        //console.log(metadata.current);
+
+        setLoading(false);
+        console.log('Model loaded');
+      } catch (err) {
+        console.log('An error occurred during loading model:', err);
+        setLoading(false);
+      }
+    };
+
     loadModel();
   }, []);
 
-  const loadModel = async () => {
+  const preprocessInput = text => {
     try {
-      const model = await loadTensorflowModel(
-        require('../assets/emotion_detection_model2.tflite'),
-      );
-      setModel(model);
-      console.log(`Model loaded! Shape:\n${modelToString(model)}]`);
+      const tokenized = tokenize(text);
+      const sequence = tokenized.map(word => {
+        let wordIndex =
+          metadata.current.word_index[word] + metadata.current.index_from;
+        if (wordIndex > metadata.current.vocabulary_size) {
+          wordIndex = 2; // OOV_INDEX
+        }
+        return wordIndex;
+      });
 
-      const actualModel = model.state === 'loaded' ? model.model : model;
-      setModel(actualModel);
-      // console.log(`Actual Model is! Shape:\n${modelToString(actualModel)}]`);
-    } catch (error) {
-      console.error('Error loading model:', error);
+      const paddedSequence = padSequences([sequence], metadata.current.max_len);
+
+      return tf.tensor2d(paddedSequence, [1, metadata.current.max_len]);
+    } catch (err) {
+      console.log('An error occurred during input preprocessing:', err);
     }
   };
 
-  const predictEmotion = async text => {
+  const tokenize = text => {
+    let lexer = new Tokenizr();
+
+    lexer.rule(/[a-zA-Z_][a-zA-Z0-9_]*/, (ctx, match) => {
+      ctx.accept('id');
+    });
+    lexer.rule(/[+-]?[0-9]+/, (ctx, match) => {
+      ctx.accept('number', parseInt(match[0]));
+    });
+    lexer.rule(/"((?:\\"|[^\r\n])*)"/, (ctx, match) => {
+      ctx.accept('string', match[1].replace(/\\"/g, '"'));
+    });
+    lexer.rule(/\/\/[^\r\n]*\r?\n/, (ctx, match) => {
+      ctx.ignore();
+    });
+    lexer.rule(/[ \t\r\n]+/, (ctx, match) => {
+      ctx.ignore();
+    });
+    lexer.rule(/./, (ctx, match) => {
+      ctx.accept('char');
+    });
+    lexer.input(text);
+    return lexer.tokens().map(v => v.value);
+  };
+
+  const padSequences = (sequences, maxLen) => {
+    return sequences.map(seq => {
+      if (seq.length > maxLen) {
+        seq.splice(0, seq.length - maxLen);
+      }
+
+      if (seq.length < maxLen) {
+        seq = Array(maxLen - seq.length)
+          .fill(0)
+          .concat(seq);
+      }
+
+      return seq;
+    });
+  };
+
+  const detectEmotion = async () => {
     try {
       setLoading(true);
-      const preprocessT = preprocessText(text);
-      const outputData = await model.runSync([preprocessT]);
-      console.log(outputData);
-      // Handle the output data as needed
-    } catch (error) {
-      console.error('Error predicting emotion:', error);
+      const input = preprocessInput(text);
+      const predictOut = model.current.predict(input);
+      const score = predictOut.dataSync()[0];
+      predictOut.dispose();
+      setEmotion(score >= 0.5 ? 'positive' : 'negative');
+    } catch (err) {
+      console.log('An error occurred during emotion detection:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const MAX_SEQUENCE_LENGTH = 32;
-
-  const preprocessText = text => {
-    const tokens = text.toLowerCase().split(/\W+/);
-    const paddedSequence = [];
-    for (let i = 0; i < MAX_SEQUENCE_LENGTH; i++) {
-      paddedSequence.push(i < tokens.length ? tokens[i] : 0);
-    }
-    return paddedSequence;
-  };
-
-  const handlePredict = async () => {
-    await predictEmotion(text);
+  const clearAll = () => {
+    setText('');
+    setEmotion('');
   };
 
   return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    <View style={styles.container}>
       <TextInput
-        style={{width: '80%', marginBottom: 10, borderWidth: 1, padding: 10}}
-        placeholder="Enter text"
-        onChangeText={value => setText(value)}
+        style={styles.input}
+        placeholder="Enter text to detect emotion.."
+        onChangeText={setText}
         value={text}
       />
-      <Button
-        title="Predict Emotion"
-        onPress={handlePredict}
-        disabled={loading}
-      />
-      {loading && <Text>Loading...</Text>}
-      {emotion !== '' && <Text>Predicted Emotion: {emotion}</Text>}
+      <View style={styles.buttonContainer}>
+        <Button title="Detect Emotion" onPress={detectEmotion} />
+        <Button title="Clear All" onPress={clearAll} />
+      </View>
+      {loading ? (
+        <ActivityIndicator style={styles.loader} size="large" color="#0000ff" />
+      ) : (
+        emotion && (
+          <View style={styles.card}>
+            <Text style={styles.result}>Detected Emotion: {emotion}</Text>
+          </View>
+        )
+      )}
     </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    backgroundColor: '#fff',
+  },
+  input: {
+    height: 100,
+    width: '100%',
+    borderWidth: 3,
+    borderColor: '#000',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 20,
+    fontSize: 16,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 20,
+  },
+  card: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    padding: 20,
+    marginTop: 20,
+    backgroundColor: '#f9f9f9',
+  },
+  result: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  loader: {
+    marginTop: 20,
+  },
+});
+
+export default EmotionDetectionScreen2;

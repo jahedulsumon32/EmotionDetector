@@ -62,7 +62,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>GraphQL</Text>
+      <Text style={styles.title}>Find Country Information</Text>
       <TouchableOpacity style={styles.button} onPress={toggleModal1}>
         <Text style={styles.buttonText}>View All Countries</Text>
       </TouchableOpacity>

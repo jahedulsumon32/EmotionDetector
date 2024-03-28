@@ -1,17 +1,21 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useState, useEffect} from 'react';
 import {View, Text, TouchableOpacity, Platform, StyleSheet} from 'react-native';
 import FormInput from '../components/FormInput';
 import FormButton from '../components/FormButton';
 import SocialButton from '../components/SocialButton';
 import {AuthContext} from '../navigation/AuthProvider';
 import {Alert} from 'react-native';
+import firestore from '@react-native-firebase/firestore';
 
 const SignupScreen = ({navigation}) => {
   const [email, setEmail] = useState();
+  const [username, setUserName] = useState();
   const [password, setPassword] = useState();
   const [confirmPassword, setConfirmPassword] = useState();
   const [isValidEmail, setIsValidEmail] = useState(true); // State to track email validity
   const [isValidPassword, setIsValidPassword] = useState(true); // State to track password validity
+  const [usernameAvailable, setUsernameAvailable] = useState();
+  const [allUsernames, setAllUsernames] = useState([]);
 
   const {register} = useContext(AuthContext);
 
@@ -49,12 +53,68 @@ const SignupScreen = ({navigation}) => {
       Alert.alert('Error', 'Passwords do not match');
       return;
     }
-    register(email, password);
+
+    if (usernameAvailable !== true) {
+      Alert.alert(
+        'Username unavailable',
+        'Please choose a different username.',
+      );
+      return;
+    }
+
+    if (username === '') {
+      Alert.alert(
+        'Username cannot be empty. If not empty, this username is yours.',
+      );
+      return;
+    }
+
+    register(email, password, username);
   };
+
+  const getUsernames = async () => {
+    try {
+      const querySnapshot = await firestore().collection('users').get();
+
+      // Store usernames in the state
+      const usernames = querySnapshot.docs.map(doc => doc.data().username);
+      setAllUsernames(usernames);
+      console.log(usernames);
+    } catch (error) {
+      console.error('Error checking username availability: ', error);
+    }
+  };
+
+  const handleUsernameChange = text => {
+    const trimmedUsername = text.trim(); // Trim the username to remove leading and trailing spaces
+    setUserName(trimmedUsername); // Set the trimmed username in the state
+    // Check if the entered username is available (case-insensitive comparison)
+    setUsernameAvailable(!allUsernames.includes(trimmedUsername.toLowerCase()));
+  };
+
+  useEffect(() => {
+    getUsernames();
+  }, []);
 
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Create an account</Text>
+
+      <FormInput
+        labelValue={username}
+        onChangeText={handleUsernameChange}
+        placeholderText="Username"
+        iconType="user"
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+      {usernameAvailable === false && (
+        <Text style={styles.errorText}>Username not available</Text>
+      )}
+
+      {usernameAvailable === true && (
+        <Text style={styles.availableText}>Username available</Text>
+      )}
 
       <FormInput
         labelValue={email}
@@ -71,13 +131,7 @@ const SignupScreen = ({navigation}) => {
       />
 
       {!isValidEmail && (
-        <View
-          style={{
-            flexDirection: 'row', // To align the text to the left
-            alignItems: 'center', // To vertically align the text with the input
-          }}>
-          <Text style={{color: 'red'}}>incorrect format of email</Text>
-        </View>
+        <Text style={styles.errorText}>incorrect format of email</Text>
       )}
 
       <FormInput
@@ -164,5 +218,13 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     fontFamily: 'Lato-Regular',
     color: 'grey',
+  },
+  errorText: {
+    color: 'red',
+    alignSelf: 'flex-start',
+  },
+  availableText: {
+    color: 'green',
+    alignSelf: 'flex-start',
   },
 });

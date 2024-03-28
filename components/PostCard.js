@@ -632,11 +632,6 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
                         title="Delete rating"
                         onPress={() => handleDeleteRating(rating.id)}
                         color="#ff4500"
-                        style={{
-                          width: 120,
-                          height: 30,
-                          borderRadius: 5,
-                        }}
                       />
                     )}
                   </View>
@@ -709,16 +704,13 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
                     </Text>
                     {/* Delete button (rendered only for the owner) */}
                     {user.uid === comment.userId && (
-                      <Button
-                        title="Delete comment"
-                        onPress={() => handleDeleteComment(comment.id)}
-                        color="#c71585"
-                        style={{
-                          width: 120,
-                          height: 30,
-                          borderRadius: 5,
-                        }}
-                      />
+                      <View style={[{width: '20%', backgroundColor: 'red'}]}>
+                        <Button
+                          title="Delete"
+                          onPress={() => handleDeleteComment(comment.id)}
+                          color="#c71585"
+                        />
+                      </View>
                     )}
                   </View>
                 ))}
