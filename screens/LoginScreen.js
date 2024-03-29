@@ -117,13 +117,7 @@ const LoginScreen = ({navigation}) => {
         autoCorrect={false}
       />
       {!isValidEmail && (
-        <View
-          style={{
-            flexDirection: 'row', // To align the text to the left
-            alignItems: 'center', // To vertically align the text with the input
-          }}>
-          <Text style={{color: 'red'}}>incorrect format of email</Text>
-        </View>
+        <Text style={styles.errorText}>incorrect format of email</Text>
       )}
 
       <FormInput
@@ -211,5 +205,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#2e64e5',
     fontFamily: 'Lato-Regular',
+  },
+  errorText: {
+    color: 'red',
+    alignSelf: 'flex-start',
   },
 });

@@ -1,204 +1,174 @@
-import React, {useState, useEffect, useRef} from 'react';
-import {
-  View,
-  TextInput,
-  Button,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {View, Text, TextInput, Button, ActivityIndicator} from 'react-native';
 import * as tf from '@tensorflow/tfjs';
-import '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-react-native';
-import Tokenizr from 'tokenizr'; // Import Tokenizr library
-import axios from 'axios'; // Import Axios library
 
-const source = {
-  model:
-    'https://storage.googleapis.com/tfjs-models/tfjs/sentiment_cnn_v1/model.json',
-  metadata:
-    'https://storage.googleapis.com/tfjs-models/tfjs/sentiment_cnn_v1/metadata.json',
-};
+const SentimentAnalysis = () => {
+  const [model, setModel] = useState(null);
+  const [indexFrom, setIndexFrom] = useState(null);
+  const [maxLen, setMaxLen] = useState(null);
+  const [wordIndex, setWordIndex] = useState(null);
+  const [vocabularySize, setVocabularySize] = useState(null);
+  const [searchText, setSearchText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [sentimentResult, setSentimentResult] = useState(null);
 
-const EmotionDetectionScreen2 = () => {
-  const [text, setText] = useState('');
-  const [emotion, setEmotion] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const metadata = {};
-  const model = null; // Initialize model as needed
+  const getMeta = async path => {
+    const response = await fetch(path);
+    const data = await response.json();
+    return data;
+  };
 
   useEffect(() => {
-    const loadModel = async () => {
+    const loadModelAndMetadata = async () => {
       try {
-        setLoading(true);
+        console.log('Loading model');
+
         await tf.ready();
 
-        // Load model
-        model.current = await tf.loadLayersModel(source.model);
-        const metadataJson = await fetch(source.metadata);
-        metadata.current = await metadataJson.json();
-        console.log(model.current);
-        //console.log(metadata.current);
+        // Set the fetch function to the default fetch provided by React Native
+        tf.io.registerLoadRouter(url => {
+          if (url.startsWith('https://')) {
+            return fetch(url, {method: 'GET'}).then(response =>
+              response.arrayBuffer(),
+            );
+          }
+          return null;
+        });
 
-        setLoading(false);
-        console.log('Model loaded');
-      } catch (err) {
-        console.log('An error occurred during loading model:', err);
-        setLoading(false);
+        const modelUrl =
+          'https://storage.googleapis.com/tfjs-models/tfjs/sentiment_cnn_v1/model.json';
+
+        const loadedModel = await fetch(modelUrl)
+          .then(response => response.json())
+          .then(model => tf.loadLayersModel(tf.io.fromMemory(model)))
+          .catch(error => {
+            console.error('Error loading model:', error);
+            throw error;
+          });
+
+        setModel(loadedModel);
+
+        const sentimentMetadata = await getMeta(
+          'https://storage.googleapis.com/tfjs-models/tfjs/sentiment_cnn_v1/metadata.json',
+        );
+
+        setIndexFrom(sentimentMetadata['index_from']);
+        setMaxLen(sentimentMetadata['max_len']);
+        setWordIndex(sentimentMetadata['word_index']);
+        setVocabularySize(sentimentMetadata['vocabulary_size']);
+
+        setLoading(false); // Set loading to false once everything is loaded
+        console.log('Loaded model');
+      } catch (error) {
+        console.error('Error loading model or metadata:', error);
+        setLoading(false); // Set loading to false in case of an error
       }
     };
 
-    loadModel();
+    loadModelAndMetadata();
   }, []);
 
-  const preprocessInput = text => {
-    try {
-      const tokenized = tokenize(text);
-      const sequence = tokenized.map(word => {
-        let wordIndex =
-          metadata.current.word_index[word] + metadata.current.index_from;
-        if (wordIndex > metadata.current.vocabulary_size) {
-          wordIndex = 2; // OOV_INDEX
-        }
-        return wordIndex;
-      });
+  const padSequences = (
+    sequence,
+    maxLen,
+    padding = 'pre',
+    truncating = 'pre',
+    value = 0,
+  ) => {
+    let paddedSequence = sequence.slice(0, maxLen);
 
-      const paddedSequence = padSequences([sequence], metadata.current.max_len);
-
-      return tf.tensor2d(paddedSequence, [1, metadata.current.max_len]);
-    } catch (err) {
-      console.log('An error occurred during input preprocessing:', err);
+    if (padding === 'pre') {
+      paddedSequence = Array.from(
+        {length: maxLen - sequence.length},
+        () => value,
+      ).concat(paddedSequence);
+    } else {
+      paddedSequence = paddedSequence.concat(
+        Array.from({length: maxLen - sequence.length}, () => value),
+      );
     }
+
+    return paddedSequence;
   };
 
-  const tokenize = text => {
-    let lexer = new Tokenizr();
+  const predictions = async () => {
+    if (loading) {
+      console.error('Model or metadata is still loading.');
+      return;
+    }
 
-    lexer.rule(/[a-zA-Z_][a-zA-Z0-9_]*/, (ctx, match) => {
-      ctx.accept('id');
-    });
-    lexer.rule(/[+-]?[0-9]+/, (ctx, match) => {
-      ctx.accept('number', parseInt(match[0]));
-    });
-    lexer.rule(/"((?:\\"|[^\r\n])*)"/, (ctx, match) => {
-      ctx.accept('string', match[1].replace(/\\"/g, '"'));
-    });
-    lexer.rule(/\/\/[^\r\n]*\r?\n/, (ctx, match) => {
-      ctx.ignore();
-    });
-    lexer.rule(/[ \t\r\n]+/, (ctx, match) => {
-      ctx.ignore();
-    });
-    lexer.rule(/./, (ctx, match) => {
-      ctx.accept('char');
-    });
-    lexer.input(text);
-    return lexer.tokens().map(v => v.value);
-  };
+    if (!model || !indexFrom || !maxLen || !wordIndex || !vocabularySize) {
+      console.error('Model or metadata not loaded yet.');
+      return;
+    }
 
-  const padSequences = (sequences, maxLen) => {
-    return sequences.map(seq => {
-      if (seq.length > maxLen) {
-        seq.splice(0, seq.length - maxLen);
+    const inputText = searchText
+      .trim()
+      .toLowerCase()
+      .replace(/(\.|\,|\!)/g, '')
+      .split(' ');
+    console.log('Input Text:', inputText);
+
+    const sequence = inputText.map(word => {
+      let wordIndexValue = wordIndex[word] + indexFrom;
+      if (wordIndexValue === undefined || wordIndexValue > vocabularySize) {
+        wordIndexValue = 2; // Or any default value for unknown words
       }
-
-      if (seq.length < maxLen) {
-        seq = Array(maxLen - seq.length)
-          .fill(0)
-          .concat(seq);
-      }
-
-      return seq;
+      return wordIndexValue;
     });
-  };
 
-  const detectEmotion = async () => {
+    const paddedSequence = padSequences(sequence, maxLen);
+    console.log('Padded Sequence:', paddedSequence, typeof paddedSequence);
+    console.log('Padded Sequence Length:', paddedSequence.length);
+
+    //
     try {
-      setLoading(true);
-      const input = preprocessInput(text);
-      const predictOut = model.current.predict(input);
+      // Flatten the input array for tensor creation
+      const flattenedInputArray = paddedSequence.flat();
+
+      // Create the tensor from the flattened input array
+      const input = tf.tensor(flattenedInputArray, [1, maxLen], 'int32');
+
+      console.log('Input Tensor:', input);
+      console.log('Input Shape:', input.shape);
+
+      const predictOut = model.predict(input);
+
+      // Validate model output shape (optional)
+      if (predictOut.shape.length !== 1 || predictOut.shape[0] !== 1) {
+        throw new Error('Unexpected model output shape:', predictOut.shape);
+      }
+
       const score = predictOut.dataSync()[0];
       predictOut.dispose();
-      setEmotion(score >= 0.5 ? 'positive' : 'negative');
-    } catch (err) {
-      console.log('An error occurred during emotion detection:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const clearAll = () => {
-    setText('');
-    setEmotion('');
+      console.log('Predicted Score:', score);
+
+      setSentimentResult(score > 0.5 ? 'Positive' : 'Negative');
+    } catch (error) {
+      console.error('Error during prediction:', error);
+      // Handle the error gracefully, e.g., display a user-friendly message
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter text to detect emotion.."
-        onChangeText={setText}
-        value={text}
-      />
-      <View style={styles.buttonContainer}>
-        <Button title="Detect Emotion" onPress={detectEmotion} />
-        <Button title="Clear All" onPress={clearAll} />
-      </View>
+    <View>
       {loading ? (
-        <ActivityIndicator style={styles.loader} size="large" color="#0000ff" />
+        <ActivityIndicator />
       ) : (
-        emotion && (
-          <View style={styles.card}>
-            <Text style={styles.result}>Detected Emotion: {emotion}</Text>
-          </View>
-        )
+        <View>
+          <TextInput
+            value={searchText}
+            onChangeText={setSearchText}
+            placeholder="Enter text for sentiment analysis"
+          />
+          <Button title="Analyze" onPress={predictions} />
+          {sentimentResult && <Text>Sentiment: {sentimentResult}</Text>}
+        </View>
       )}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    backgroundColor: '#fff',
-  },
-  input: {
-    height: 100,
-    width: '100%',
-    borderWidth: 3,
-    borderColor: '#000',
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 20,
-    fontSize: 16,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 20,
-  },
-  card: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 10,
-    padding: 20,
-    marginTop: 20,
-    backgroundColor: '#f9f9f9',
-  },
-  result: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  loader: {
-    marginTop: 20,
-  },
-});
-
-export default EmotionDetectionScreen2;
+export default SentimentAnalysis;

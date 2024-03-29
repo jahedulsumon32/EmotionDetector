@@ -226,7 +226,7 @@ const AppStack = () => {
 
       <Drawer.Screen name="Google Map" component={MapScreen} />
       <Drawer.Screen name="Videos" component={VideosScreen} />
-      {/* <Drawer.Screen name="Detector" component={EmotionDetectionScreen2} /> */}
+      <Drawer.Screen name="Detector" component={EmotionDetectionScreen2} />
       <Drawer.Screen name="Find Country code and Capital" component={GraphQL} />
       {/* <Drawer.Screen name="Animation" component={WelcomeAnimation2} /> */}
     </Drawer.Navigator>
