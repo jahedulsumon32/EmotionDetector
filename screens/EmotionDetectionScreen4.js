@@ -5,10 +5,11 @@ import * as toxicity from '@tensorflow-models/toxicity';
 import {fetch} from '@tensorflow/tfjs-react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 
-export default function App() {
+export default function EmotionDetectionScreen4() {
   const [predictions, setPredictions] = useState([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loading2, setLoading2] = useState(false);
   const [model, setModel] = useState(null);
 
   const loadToxicityModel = async () => {
@@ -48,11 +49,14 @@ export default function App() {
   };
 
   const classifySentences = async sentences => {
+    setLoading2(true);
     try {
       const predictions = await model.classify(sentences);
+
       return predictions;
     } catch (error) {
       console.error('Error classifying sentences:', error);
+      setLoading2(false); // Set loading2 to false if there's an error
       return [];
     }
   };
@@ -68,11 +72,10 @@ export default function App() {
 
   const handlePredict = () => {
     const sentences = [inputText];
-    setLoading(true);
     classifySentences(sentences).then(predictions => {
       setPredictions(predictions);
+      setLoading2(false);
     });
-    setLoading(false);
   };
 
   const handleClear = () => {
@@ -92,9 +95,12 @@ export default function App() {
             padding: 10,
             marginBottom: 20,
           }}
+          // multiline={true}
+          // textAlignVertical="top"
           placeholder="Enter text to detect toxicity"
-          onChangeText={handleTextInputChange}
+          onChangeText={setInputText}
           value={inputText}
+          returnKeyType="done"
         />
         {!loading && (
           <View
@@ -107,18 +113,43 @@ export default function App() {
             <Button onPress={handleClear} title="Clear" color="#FF5722" />
           </View>
         )}
-
         <View style={{marginTop: 10}}>
-          {loading ? (
+          {loading && (
             <View style={{alignItems: 'center'}}>
               <ActivityIndicator size="large" color="#0000ff" />
-              <Text>Loading model...</Text>
+              <Text>
+                Wait 2 minutes patiently.Don't go to other screens.Loading
+                model...
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View style={{marginTop: 10}}>
+          {loading2 && (
+            <View style={{alignItems: 'center'}}>
+              <ActivityIndicator size="large" color="#0000ff" />
+              <Text>Predicting....</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={{marginTop: 10}}>
+          {loading2 ? (
+            <View style={{alignItems: 'center', marginTop: 50}}>
+              <Text>Predicting....</Text>
             </View>
           ) : (
             predictions.map(prediction => (
               <View key={prediction.label} style={{marginTop: 20}}>
                 <Text
-                  style={{fontSize: 18, fontWeight: 'bold', color: 'black'}}>
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    color: prediction.results.some(result => result.match)
+                      ? 'red'
+                      : 'black',
+                  }}>
                   Label: {prediction.label}
                 </Text>
                 {prediction.results.map((result, index) => (
