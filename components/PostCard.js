@@ -61,6 +61,11 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
   const [userHasRated, setUserHasRated] = useState(false); // State to track if user has already rated
   const [emotionLoading, setEmotionLoading] = useState(false);
   const [detectedEmotion, setDetectedEmotion] = useState(null);
+  const [allDetectedEmotions, setallDetectedEmotions] = useState([]);
+  const [showEmotions, setShowEmotions] = useState(true);
+  const handleCloseEmotions = () => {
+    setShowEmotions(false);
+  };
 
   // Pagination Control
   const [currentPage, setCurrentPage] = useState(1);
@@ -453,40 +458,89 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
     }
   };
 
-  const handleEmotion = async () => {
+  // const handleEmotion = async () => {
+  //   try {
+  //     // Show loader
+  //     setEmotionLoading(true);
+
+  //     // Perform emotion detection
+  //     const options = {
+  //       method: 'POST',
+  //       url: 'https://emodex-emotions-analysis.p.rapidapi.com/rapidapi/emotions',
+  //       headers: {
+  //         'content-type': 'application/json',
+  //         'X-RapidAPI-Key':
+  //           'ab2f77f9cfmshaef089c6f33afd2p1225abjsn3969ad40952f',
+  //         'X-RapidAPI-Host': 'emodex-emotions-analysis.p.rapidapi.com',
+  //       },
+  //       data: {
+  //         sentence: item.post, // Use the post text for emotion detection
+  //       },
+  //     };
+
+  //     const response = await axios.request(options);
+  //     const {sentence} = response.data;
+
+  //     // Remove the 'text' key pair
+  //     delete sentence.text;
+
+  //     // Find the emotion with the highest probability
+  //     const maxEmotion = Object.keys(sentence).reduce((a, b) =>
+  //       sentence[a] > sentence[b] ? a : b,
+  //     );
+
+  //     // Hide loader
+  //     setEmotionLoading(false);
+
+  //     // Show tag of the detected emotion
+  //     setDetectedEmotion(maxEmotion);
+  //   } catch (error) {
+  //     console.error('Error detecting emotion:', error);
+  //     // Hide loader and set detected emotion to null in case of error
+  //     setEmotionLoading(false);
+  //     setDetectedEmotion(null);
+  //   }
+  // };
+
+  const handleEmotion2 = async () => {
     try {
       // Show loader
       setEmotionLoading(true);
+      var myHeaders = new Headers();
+      myHeaders.append('apikey', 'HJW7cqduX5izdQ4EBIlN2ifcGzIu2IFO');
 
-      // Perform emotion detection
-      const options = {
+      var raw = JSON.stringify({
+        text: item.post,
+      });
+
+      var requestOptions = {
         method: 'POST',
-        url: 'https://emodex-emotions-analysis.p.rapidapi.com/rapidapi/emotions',
-        headers: {
-          'content-type': 'application/json',
-          'X-RapidAPI-Key':
-            'ab2f77f9cfmshaef089c6f33afd2p1225abjsn3969ad40952f',
-          'X-RapidAPI-Host': 'emodex-emotions-analysis.p.rapidapi.com',
-        },
-        data: {
-          sentence: item.post, // Use the post text for emotion detection
-        },
+        redirect: 'follow',
+        headers: myHeaders,
+        body: raw,
       };
 
-      const response = await axios.request(options);
-      const {sentence} = response.data;
-
-      // Remove the 'text' key pair
-      delete sentence.text;
-
-      // Find the emotion with the highest probability
-      const maxEmotion = Object.keys(sentence).reduce((a, b) =>
-        sentence[a] > sentence[b] ? a : b,
+      const response = await fetch(
+        'https://api.apilayer.com/text_to_emotion',
+        requestOptions,
       );
+      const result = await response.json();
 
+      // Extracting emotions with their probabilities
+      const emotions = Object.keys(result).map(emotion => ({
+        emotion,
+        score: result[emotion],
+      }));
+
+      // Update detected emotions
+      setallDetectedEmotions(emotions);
+
+      // Extracting emotion with highest probability
+      const maxEmotion = Object.keys(result).reduce((a, b) =>
+        result[a] > result[b] ? a : b,
+      );
       // Hide loader
       setEmotionLoading(false);
-
       // Show tag of the detected emotion
       setDetectedEmotion(maxEmotion);
     } catch (error) {
@@ -563,7 +617,14 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
           </Interaction>
 
           {/* Emtion Button */}
-          <Interaction onPress={handleEmotion}>
+          {/* <Interaction onPress={handleEmotion}>
+            <MaterialIcons name="insert-emoticon" size={20} />
+            <InteractionText>
+              {emotionLoading ? 'Detecting...' : 'Emotion'}
+            </InteractionText>
+          </Interaction> */}
+
+          <Interaction onPress={handleEmotion2}>
             <MaterialIcons name="insert-emoticon" size={20} />
             <InteractionText>
               {emotionLoading ? 'Detecting...' : 'Emotion'}
@@ -579,9 +640,28 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
         </InteractionWrapper>
 
         {/* Show detected emotion tag */}
-        {detectedEmotion && !emotionLoading && (
+        {/* {detectedEmotion && !emotionLoading && (
           <View style={styles.detectedEmotionContainer}>
             <Text style={styles.detectedEmotionText}>{detectedEmotion}</Text>
+          </View>
+        )} */}
+        {/* Show detected emotions */}
+        {/* Show detected emotions */}
+        {!emotionLoading && allDetectedEmotions.length > 0 && showEmotions && (
+          <View style={styles.detectedEmotionsContainer}>
+            <TouchableOpacity
+              onPress={handleCloseEmotions}
+              style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+            {allDetectedEmotions.map(({emotion, score}, index) => (
+              <View key={index} style={styles.detectedEmotionContainer}>
+                <Text
+                  style={
+                    styles.detectedEmotionText
+                  }>{`${emotion}: ${score}`}</Text>
+              </View>
+            ))}
           </View>
         )}
 
@@ -815,6 +895,25 @@ const styles = StyleSheet.create({
   detectedEmotionText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#333',
+  },
+  detectedEmotionsContainer: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+  },
+  detectedEmotionContainer2: {
+    marginBottom: 5,
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+    padding: 5,
+    backgroundColor: '#ccc',
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    fontSize: 14,
     color: '#333',
   },
 });

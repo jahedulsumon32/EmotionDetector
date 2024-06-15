@@ -27,6 +27,7 @@ import CrystalReport from '../screens/CrystalReport';
 import EmotionDetectionScreen from '../screens/EmotionDetectionScreen';
 import EmotionDetectionScreen2 from '../screens/EmotionDetectionScreen2';
 import EmotionDetectionScreen4 from '../screens/EmotionDetectionScreen4';
+import EmotionDetectionScreenAPI2 from '../screens/EmotionDetectionScreenAPI2';
 import CrystalReport2 from '../screens/CrystalReport2';
 import GraphQL from '../screens/GraphQL';
 import WelcomeAnimation2 from '../screens/WelcomeAnimation2';
@@ -166,7 +167,8 @@ const TabNavigator = () => (
 
     <Tab.Screen
       name="EmotionDetector"
-      component={EmotionDetectionScreen}
+      //component={EmotionDetectionScreen}
+      component={EmotionDetectionScreenAPI2}
       options={{
         tabBarLabel: 'Emotion',
         tabBarIcon: ({color, size}) => (
