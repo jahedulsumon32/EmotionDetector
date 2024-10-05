@@ -141,7 +141,9 @@ const LoginScreen = ({navigation}) => {
       <FormButton buttonTitle="Sign In" onPress={() => handleLogin()} />
 
       <TouchableOpacity style={styles.forgotButton} onPress={() => {}}>
-        <Text style={styles.navButtonText}>Forgot Password?</Text>
+        <Text style={styles.navButtonText}>
+          Sign in with other options below
+        </Text>
       </TouchableOpacity>
 
       {Platform.OS === 'android' ? (

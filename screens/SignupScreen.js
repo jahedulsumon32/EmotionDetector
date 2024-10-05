@@ -1,5 +1,12 @@
 import React, {useContext, useState, useEffect} from 'react';
-import {View, Text, TouchableOpacity, Platform, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
 import FormInput from '../components/FormInput';
 import FormButton from '../components/FormButton';
 import SocialButton from '../components/SocialButton';
@@ -16,6 +23,7 @@ const SignupScreen = ({navigation}) => {
   const [isValidPassword, setIsValidPassword] = useState(true); // State to track password validity
   const [usernameAvailable, setUsernameAvailable] = useState();
   const [allUsernames, setAllUsernames] = useState([]);
+  const [isUsernameValid, setIsUsernameValid] = useState(true);
 
   const {register} = useContext(AuthContext);
 
@@ -89,7 +97,17 @@ const SignupScreen = ({navigation}) => {
     const trimmedUsername = text.trim(); // Trim the username to remove leading and trailing spaces
     setUserName(trimmedUsername); // Set the trimmed username in the state
     // Check if the entered username is available (case-insensitive comparison)
-    setUsernameAvailable(!allUsernames.includes(trimmedUsername.toLowerCase()));
+    // Check if the entered username is available only if the username length is at least 3
+    if (trimmedUsername.length >= 3) {
+      setUsernameAvailable(
+        !allUsernames.includes(trimmedUsername.toLowerCase()),
+      );
+    } else {
+      setUsernameAvailable(undefined); // Reset availability status if the username is too short
+    }
+
+    // Check if the username length is at least 3 characters
+    setIsUsernameValid(trimmedUsername.length >= 3);
   };
 
   useEffect(() => {
@@ -97,100 +115,100 @@ const SignupScreen = ({navigation}) => {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Create an account</Text>
-
-      <FormInput
-        labelValue={username}
-        onChangeText={handleUsernameChange}
-        placeholderText="Username"
-        iconType="user"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      {usernameAvailable === false && (
-        <Text style={styles.errorText}>Username not available</Text>
-      )}
-
-      {usernameAvailable === true && (
-        <Text style={styles.availableText}>Username available</Text>
-      )}
-
-      <FormInput
-        labelValue={email}
-        onChangeText={userEmail => {
-          setEmail(userEmail);
-          // Validate email on each change and update isValidEmail state
-          setIsValidEmail(validateEmail(userEmail));
-        }}
-        placeholderText="Email"
-        iconType="user"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-
-      {!isValidEmail && (
-        <Text style={styles.errorText}>incorrect format of email</Text>
-      )}
-
-      <FormInput
-        labelValue={password}
-        onChangeText={userPassword => {
-          setPassword(userPassword);
-          setIsValidPassword(validatePassword(password));
-        }}
-        placeholderText="Password"
-        iconType="lock"
-        secureTextEntry={true}
-      />
-
-      <FormInput
-        labelValue={confirmPassword}
-        onChangeText={userPassword => {
-          setConfirmPassword(userPassword);
-          setIsValidPassword(validatePassword(password));
-        }}
-        placeholderText="Confirm Password"
-        iconType="lock"
-        secureTextEntry={true}
-      />
-
-      <FormButton buttonTitle="Sign Up" onPress={() => handleRegister()} />
-
-      <View style={styles.textPrivate}>
-        <Text style={styles.color_textPrivate}>
-          By registering, you confirm that you accept our{' '}
-        </Text>
-        <TouchableOpacity onPress={() => alert('Terms Clicked!')}>
-          <Text style={[styles.color_textPrivate, {color: '#e88832'}]}>
-            Terms of service
+    <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+      <View style={styles.innerContainer}>
+        <Text style={styles.text}>Create an account</Text>
+        <FormInput
+          labelValue={username}
+          onChangeText={handleUsernameChange}
+          placeholderText="Username"
+          iconType="user"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {!isUsernameValid && (
+          <Text style={styles.errorText}>
+            Username must be at least 3 characters long
           </Text>
+        )}
+        {usernameAvailable === false && (
+          <Text style={styles.errorText}>Username not available</Text>
+        )}
+        {usernameAvailable === true && (
+          <Text style={styles.availableText}>Username available</Text>
+        )}
+        <FormInput
+          labelValue={email}
+          onChangeText={userEmail => {
+            setEmail(userEmail);
+            // Validate email on each change and update isValidEmail state
+            setIsValidEmail(validateEmail(userEmail));
+          }}
+          placeholderText="Email"
+          iconType="user"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {!isValidEmail && (
+          <Text style={styles.errorText}>incorrect format of email</Text>
+        )}
+        <FormInput
+          labelValue={password}
+          onChangeText={userPassword => {
+            setPassword(userPassword);
+            setIsValidPassword(validatePassword(password));
+          }}
+          placeholderText="Password"
+          iconType="lock"
+          secureTextEntry={true}
+        />
+        <FormInput
+          labelValue={confirmPassword}
+          onChangeText={userPassword => {
+            setConfirmPassword(userPassword);
+            setIsValidPassword(validatePassword(password));
+          }}
+          placeholderText="Confirm Password"
+          iconType="lock"
+          secureTextEntry={true}
+        />
+        <FormButton buttonTitle="Sign Up" onPress={() => handleRegister()} />
+        <View style={styles.textPrivate}>
+          <Text style={styles.color_textPrivate}>
+            By registering, you confirm that you accept our{' '}
+          </Text>
+          <TouchableOpacity onPress={() => alert('Terms Clicked!')}>
+            <Text style={[styles.color_textPrivate, {color: '#e88832'}]}>
+              Terms of service
+            </Text>
+          </TouchableOpacity>
+          <Text style={styles.color_textPrivate}> and </Text>
+          <Text style={[styles.color_textPrivate, {color: '#e88832'}]}>
+            Privacy Policy
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.navButtonText}>Have an account? Sign In</Text>
         </TouchableOpacity>
-        <Text style={styles.color_textPrivate}> and </Text>
-        <Text style={[styles.color_textPrivate, {color: '#e88832'}]}>
-          Privacy Policy
-        </Text>
       </View>
-
-      <TouchableOpacity
-        style={styles.navButton}
-        onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.navButtonText}>Have an account? Sign In</Text>
-      </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
 export default SignupScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#f9fafd',
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+  scrollViewContainer: {
+    padding: 20, // Updated: Added padding for content spacing
+    alignItems: 'center', // Updated: Centering the content horizontally
+    justifyContent: 'center', // Updated: Centering the content vertically
+  },
+  innerContainer: {
+    width: '100%', // Updated: Allow full width for inner container
+    alignItems: 'center', // Updated: Center items within the inner container
   },
   text: {
     fontFamily: 'Kufam-SemiBoldItalic',
