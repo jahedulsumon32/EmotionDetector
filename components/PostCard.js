@@ -707,13 +707,21 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
                       {rating.fname} {rating.lname} gives {rating.rating} stars.
                     </Text>
                     {/* Delete button (rendered only for the owner) */}
-                    {user.uid === rating.userId && (
+                    {/* {user.uid === rating.userId && (
                       <Button
                         title="Delete rating"
                         onPress={() => handleDeleteRating(rating.id)}
                         color="#ff4500"
                       />
-                    )}
+                    )} */}
+                    <InteractionWrapper>
+                      {user.uid == rating.userId && (
+                        <Interaction
+                          onPress={() => handleDeleteRating(rating.id)}>
+                          <Ionicons name="trash-bin" size={20} />
+                        </Interaction>
+                      )}
+                    </InteractionWrapper>
                   </View>
                 ))}
               </ScrollView>
@@ -783,7 +791,7 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
                       {moment(comment.timestamp.toDate()).fromNow()}
                     </Text>
                     {/* Delete button (rendered only for the owner) */}
-                    {user.uid === comment.userId && (
+                    {/* {user.uid === comment.userId && (
                       <View style={[{width: '20%', backgroundColor: 'red'}]}>
                         <Button
                           title="Delete"
@@ -791,7 +799,16 @@ const PostCard = ({item, onDelete, onPress, showDeleteButton}) => {
                           color="#c71585"
                         />
                       </View>
-                    )}
+                    )} */}
+
+                    <InteractionWrapper>
+                      {user.uid == comment.userId && (
+                        <Interaction
+                          onPress={() => handleDeleteComment(comment.id)}>
+                          <Ionicons name="trash-bin" size={20} />
+                        </Interaction>
+                      )}
+                    </InteractionWrapper>
                   </View>
                 ))}
 
