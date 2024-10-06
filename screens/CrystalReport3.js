@@ -1,5 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import {LineChart} from 'react-native-gifted-charts';
 import firestore from '@react-native-firebase/firestore';
 import {useFocusEffect} from '@react-navigation/native';
@@ -138,7 +144,7 @@ const CrystalReport3 = () => {
       endOpacity={0.2}
       initialSpacing={0}
       spacing={30}
-      thickness={4}
+      thickness={6}
       color={chartColor}
       noOfSections={6}
       xAxisColor="lightgray"
@@ -150,7 +156,7 @@ const CrystalReport3 = () => {
       rulesType="solid"
       showVerticalLines={false}
       showReferenceLine={false}
-      animationDuration={500} // Add smooth animation
+      animationDuration={700} // Smoother animation duration
       pointerConfig={{
         pointerStripHeight: 250,
         pointerStripColor: chartColor,
@@ -178,21 +184,33 @@ const CrystalReport3 = () => {
   return (
     <ScrollView style={styles.container}>
       {loading ? (
-        <Text style={styles.loadingText}>Loading...</Text>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007aff" />
+          <Text style={styles.loadingText}>Loading Data...</Text>
+        </View>
       ) : (
         <>
-          <Text style={styles.header}>User Statisitics</Text>
-          <Text style={styles.chartTitle}>Number of Posts:</Text>
-          {renderChart(ptData, '#007aff', 'rgba(0,122,255,0.3)')}
+          <Text style={styles.header}>User Statistics</Text>
 
-          <Text style={styles.chartTitle}>Number of Likes:</Text>
-          {renderChart(likesData, '#00ff83', 'rgba(20,105,81,0.3)')}
+          <View style={styles.card}>
+            <Text style={styles.chartTitle}>Number of Posts</Text>
+            {renderChart(ptData, '#007aff', 'rgba(0,122,255,0.3)')}
+          </View>
 
-          <Text style={styles.chartTitle}>Number of Dislikes:</Text>
-          {renderChart(dislikesData, '#ff3b30', 'rgba(255,59,48,0.3)')}
+          <View style={styles.card}>
+            <Text style={styles.chartTitle}>Number of Likes</Text>
+            {renderChart(likesData, '#00ff83', 'rgba(20,105,81,0.3)')}
+          </View>
 
-          <Text style={styles.chartTitle}>Number of Comments:</Text>
-          {renderChart(commentsData, '#ff9500', 'rgba(255,149,0,0.3)')}
+          <View style={styles.card}>
+            <Text style={styles.chartTitle}>Number of Dislikes</Text>
+            {renderChart(dislikesData, '#ff3b30', 'rgba(255,59,48,0.3)')}
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.chartTitle}>Number of Comments</Text>
+            {renderChart(commentsData, '#ff9500', 'rgba(255,149,0,0.3)')}
+          </View>
 
           <View style={styles.bottomspace} />
         </>
@@ -203,50 +221,68 @@ const CrystalReport3 = () => {
 
 const styles = StyleSheet.create({
   header: {
-    fontSize: 30,
+    fontSize: 32,
     textAlign: 'center',
-    color: 'black',
+    color: '#333',
     fontWeight: 'bold',
+    marginVertical: 10,
   },
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingText: {
-    fontSize: 20,
-    textAlign: 'center',
-    marginTop: 20,
-    color: 'gray',
+    fontSize: 18,
+    color: '#888',
+    marginTop: 10,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   chartTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginVertical: 10,
-    color: 'black',
+    marginBottom: 10,
+    color: '#444',
   },
   pointerLabel: {
     backgroundColor: 'white',
     padding: 5,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: 'lightgray',
+    borderRadius: 5,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
   },
   pointerLabelDate: {
-    fontSize: 12,
-    color: 'gray',
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#666',
   },
   pointerValueContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 5,
   },
   pointerValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginLeft: 5,
   },
   bottomspace: {
-    height: 60,
+    height: 80,
   },
 });
 
