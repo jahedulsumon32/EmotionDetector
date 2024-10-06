@@ -122,195 +122,78 @@ const CrystalReport3 = () => {
     }, []),
   );
 
+  const renderChart = (data, chartColor, fillColor) => (
+    <LineChart
+      areaChart
+      data={data}
+      rotateLabel
+      width={350}
+      height={250}
+      hideDataPoints={false}
+      dataPointsColor={chartColor}
+      dataPointsRadius={4}
+      startFillColor={fillColor}
+      endFillColor={fillColor}
+      startOpacity={0.5}
+      endOpacity={0.2}
+      initialSpacing={0}
+      spacing={30}
+      thickness={4}
+      color={chartColor}
+      noOfSections={6}
+      xAxisColor="lightgray"
+      xAxisData={data.map(d => d.date)}
+      yAxisColor="transparent"
+      yAxisThickness={0}
+      yAxisTextStyle={{color: 'gray'}}
+      rulesColor="lightgray"
+      rulesType="solid"
+      showVerticalLines={false}
+      showReferenceLine={false}
+      animationDuration={500} // Add smooth animation
+      pointerConfig={{
+        pointerStripHeight: 250,
+        pointerStripColor: chartColor,
+        pointerStripWidth: 2,
+        pointerColor: 'lightgray',
+        radius: 6,
+        pointerLabelWidth: 100,
+        pointerLabelHeight: 80,
+        activatePointersOnLongPress: true,
+        autoAdjustPointerLabelPosition: true,
+        pointerLabelComponent: items => (
+          <View style={styles.pointerLabel}>
+            <Text style={styles.pointerLabelDate}>{items[0].date}</Text>
+            <View style={styles.pointerValueContainer}>
+              <Text style={[styles.pointerValue, {color: chartColor}]}>
+                {items[0].value}
+              </Text>
+            </View>
+          </View>
+        ),
+      }}
+    />
+  );
+
   return (
     <ScrollView style={styles.container}>
       {loading ? (
         <Text style={styles.loadingText}>Loading...</Text>
       ) : (
         <>
+          <Text style={styles.header}>User Statisitics</Text>
           <Text style={styles.chartTitle}>Number of Posts:</Text>
-          <LineChart
-            areaChart
-            data={ptData} // Posts data
-            rotateLabel
-            width={300}
-            hideDataPoints
-            spacing={10}
-            color="#007aff" // Set color for posts chart
-            thickness={3}
-            startFillColor="rgba(0,122,255,0.3)" // Set fill color
-            endFillColor="rgba(0,122,255,0.01)"
-            startOpacity={0.9}
-            endOpacity={0.2}
-            initialSpacing={0}
-            noOfSections={6}
-            maxValue={Math.max(...ptData.map(data => data.value)) || 0}
-            yAxisColor="white"
-            yAxisThickness={0}
-            rulesType="solid"
-            rulesColor="gray"
-            yAxisTextStyle={{color: 'gray'}}
-            yAxisSide="right"
-            xAxisColor="lightgray"
-            xAxisData={ptData.map(data => data.date)} // Map posts data to x-axis
-            pointerConfig={{
-              pointerStripHeight: 160,
-              pointerStripColor: 'black',
-              pointerStripWidth: 4,
-              pointerColor: 'lightgray',
-              radius: 6,
-              pointerLabelWidth: 100,
-              pointerLabelHeight: 90,
-              activatePointersOnLongPress: true,
-              autoAdjustPointerLabelPosition: false,
-              pointerLabelComponent: items => (
-                <View style={styles.pointerLabel}>
-                  <Text style={styles.pointerLabelDate}>{items[0].date}</Text>
-                  <View style={styles.pointerValueContainer}>
-                    <Text style={styles.pointerValue}>{items[0].value}</Text>
-                  </View>
-                </View>
-              ),
-            }}
-          />
+          {renderChart(ptData, '#007aff', 'rgba(0,122,255,0.3)')}
 
           <Text style={styles.chartTitle}>Number of Likes:</Text>
-          <LineChart
-            areaChart
-            data={likesData}
-            rotateLabel
-            width={300}
-            hideDataPoints
-            spacing={10}
-            color="#00ff83"
-            thickness={3}
-            startFillColor="rgba(20,105,81,0.3)"
-            endFillColor="rgba(20,85,81,0.01)"
-            startOpacity={0.9}
-            endOpacity={0.2}
-            initialSpacing={0}
-            noOfSections={6}
-            maxValue={Math.max(...likesData.map(data => data.value)) || 0}
-            yAxisColor="white"
-            yAxisThickness={0}
-            rulesType="solid"
-            rulesColor="gray"
-            yAxisTextStyle={{color: 'gray'}}
-            yAxisSide="right"
-            xAxisColor="lightgray"
-            xAxisData={likesData.map(data => data.date)}
-            pointerConfig={{
-              pointerStripHeight: 160,
-              pointerStripColor: 'black',
-              pointerStripWidth: 4,
-              pointerColor: 'lightgray',
-              radius: 6,
-              pointerLabelWidth: 100,
-              pointerLabelHeight: 90,
-              activatePointersOnLongPress: true,
-              autoAdjustPointerLabelPosition: false,
-              pointerLabelComponent: items => (
-                <View style={styles.pointerLabel}>
-                  <Text style={styles.pointerLabelDate}>{items[0].date}</Text>
-                  <View style={styles.pointerValueContainer}>
-                    <Text style={styles.pointerValue}>{items[0].value}</Text>
-                  </View>
-                </View>
-              ),
-            }}
-          />
+          {renderChart(likesData, '#00ff83', 'rgba(20,105,81,0.3)')}
 
           <Text style={styles.chartTitle}>Number of Dislikes:</Text>
-          <LineChart
-            areaChart
-            data={dislikesData}
-            rotateLabel
-            width={300}
-            hideDataPoints
-            spacing={10}
-            color="#ff3b30"
-            thickness={3}
-            startFillColor="rgba(255,59,48,0.3)"
-            endFillColor="rgba(255,59,48,0.01)"
-            startOpacity={0.9}
-            endOpacity={0.2}
-            initialSpacing={0}
-            noOfSections={6}
-            maxValue={Math.max(...dislikesData.map(data => data.value)) || 0}
-            yAxisColor="white"
-            yAxisThickness={0}
-            rulesType="solid"
-            rulesColor="gray"
-            yAxisTextStyle={{color: 'gray'}}
-            yAxisSide="right"
-            xAxisColor="lightgray"
-            xAxisData={dislikesData.map(data => data.date)}
-            pointerConfig={{
-              pointerStripHeight: 160,
-              pointerStripColor: 'black',
-              pointerStripWidth: 4,
-              pointerColor: 'lightgray',
-              radius: 6,
-              pointerLabelWidth: 100,
-              pointerLabelHeight: 90,
-              activatePointersOnLongPress: true,
-              autoAdjustPointerLabelPosition: false,
-              pointerLabelComponent: items => (
-                <View style={styles.pointerLabel}>
-                  <Text style={styles.pointerLabelDate}>{items[0].date}</Text>
-                  <View style={styles.pointerValueContainer}>
-                    <Text style={styles.pointerValue}>{items[0].value}</Text>
-                  </View>
-                </View>
-              ),
-            }}
-          />
+          {renderChart(dislikesData, '#ff3b30', 'rgba(255,59,48,0.3)')}
 
           <Text style={styles.chartTitle}>Number of Comments:</Text>
-          <LineChart
-            areaChart
-            data={commentsData}
-            rotateLabel
-            width={300}
-            hideDataPoints
-            spacing={10}
-            color="#007aff"
-            thickness={3}
-            startFillColor="rgba(0,122,255,0.3)"
-            endFillColor="rgba(0,122,255,0.01)"
-            startOpacity={0.9}
-            endOpacity={0.2}
-            initialSpacing={0}
-            noOfSections={6}
-            maxValue={Math.max(...commentsData.map(data => data.value)) || 0}
-            yAxisColor="white"
-            yAxisThickness={0}
-            rulesType="solid"
-            rulesColor="gray"
-            yAxisTextStyle={{color: 'gray'}}
-            yAxisSide="right"
-            xAxisColor="lightgray"
-            xAxisData={commentsData.map(data => data.date)}
-            pointerConfig={{
-              pointerStripHeight: 160,
-              pointerStripColor: 'black',
-              pointerStripWidth: 4,
-              pointerColor: 'lightgray',
-              radius: 6,
-              pointerLabelWidth: 100,
-              pointerLabelHeight: 90,
-              activatePointersOnLongPress: true,
-              autoAdjustPointerLabelPosition: false,
-              pointerLabelComponent: items => (
-                <View style={styles.pointerLabel}>
-                  <Text style={styles.pointerLabelDate}>{items[0].date}</Text>
-                  <View style={styles.pointerValueContainer}>
-                    <Text style={styles.pointerValue}>{items[0].value}</Text>
-                  </View>
-                </View>
-              ),
-            }}
-          />
+          {renderChart(commentsData, '#ff9500', 'rgba(255,149,0,0.3)')}
+
           <View style={styles.bottomspace} />
         </>
       )}
@@ -319,14 +202,22 @@ const CrystalReport3 = () => {
 };
 
 const styles = StyleSheet.create({
+  header: {
+    fontSize: 30,
+    textAlign: 'center',
+    color: 'black',
+    fontWeight: 'bold',
+  },
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: '#f8f9fa',
   },
   loadingText: {
     fontSize: 20,
     textAlign: 'center',
     marginTop: 20,
+    color: 'gray',
   },
   chartTitle: {
     fontSize: 18,
@@ -354,7 +245,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 5,
   },
-
   bottomspace: {
     height: 60,
   },
