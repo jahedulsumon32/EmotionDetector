@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import {LineChart} from 'react-native-gifted-charts';
 import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth'; // Import Firebase auth
 import {useFocusEffect} from '@react-navigation/native';
 
 const CrystalReport3 = () => {
@@ -23,8 +24,16 @@ const CrystalReport3 = () => {
   const fetchUserPosts = async () => {
     setLoading(true);
     try {
+      const currentUser = auth().currentUser; // Get current logged-in user
+      const userId = currentUser ? currentUser.uid : null;
+
+      if (!userId) {
+        throw new Error('User not logged in');
+      }
+
       const snapshot = await firestore()
         .collection('posts')
+        .where('userId', '==', userId) // Filter by logged-in user ID
         .orderBy('postTime', 'desc')
         .get();
 
@@ -260,29 +269,27 @@ const styles = StyleSheet.create({
   },
   pointerLabel: {
     backgroundColor: 'white',
-    padding: 5,
-    borderRadius: 5,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
+    borderColor: 'lightgray',
+    borderWidth: 1,
+    borderRadius: 4,
+    padding: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   pointerLabelDate: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#666',
+    fontSize: 12,
+    color: '#888',
   },
   pointerValueContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 5,
   },
   pointerValue: {
-    fontSize: 16,
+    fontSize: 22,
     fontWeight: 'bold',
+    marginHorizontal: 4,
   },
   bottomspace: {
-    height: 80,
+    marginVertical: 20,
   },
 });
 

@@ -3,60 +3,68 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Platform,
   StyleSheet,
   ScrollView,
 } from 'react-native';
 import FormInput from '../components/FormInput';
 import FormButton from '../components/FormButton';
-import SocialButton from '../components/SocialButton';
 import {AuthContext} from '../navigation/AuthProvider';
 import {Alert} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 
 const SignupScreen = ({navigation}) => {
-  const [email, setEmail] = useState();
-  const [username, setUserName] = useState();
-  const [password, setPassword] = useState();
-  const [confirmPassword, setConfirmPassword] = useState();
-  const [isValidEmail, setIsValidEmail] = useState(true); // State to track email validity
-  const [isValidPassword, setIsValidPassword] = useState(true); // State to track password validity
+  const [email, setEmail] = useState('');
+  const [username, setUserName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isValidEmail, setIsValidEmail] = useState(true);
+  const [isValidPassword, setIsValidPassword] = useState(true);
   const [usernameAvailable, setUsernameAvailable] = useState();
   const [allUsernames, setAllUsernames] = useState([]);
   const [isUsernameValid, setIsUsernameValid] = useState(true);
 
   const {register} = useContext(AuthContext);
 
-  // Function to validate email using regex
   const validateEmail = email => {
-    const regex = /\S+@\S+\.\S+/;
-    return regex.test(email);
+    // Trim the email input to avoid false negatives due to leading/trailing spaces
+    const trimmedEmail = email.trim();
+
+    // Basic regex to validate the general structure of an email
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+
+    // Test against the regex for the correct format and domain
+    return emailRegex.test(trimmedEmail);
   };
 
   const validatePassword = password => {
-    if (!password || password.length <= 0) {
-      return false;
-    }
-    return true;
+    return password && password.length > 0;
   };
 
-  const handleRegister = () => {
-    // Check if email is valid before attempting login
+  const handleRegister = async () => {
+    // Validate email
     if (!validateEmail(email)) {
       setIsValidEmail(false);
+      Alert.alert('Invalid Email', 'Email must end with @gmail.com');
+      return;
+    }
+
+    // Check if the email already exists in the database
+    const emailExists = await checkEmailExists(email);
+    if (emailExists) {
       Alert.alert(
-        'Unvalid Email. Please try again with correct amail address.',
+        'Email already exists',
+        'Please use a different email address.',
       );
       return;
     }
 
+    // Validate password
     if (!validatePassword(password)) {
       setIsValidPassword(false);
-      Alert.alert('Password cannot be empty');
+      Alert.alert('Error', 'Password cannot be empty');
       return;
     }
-    setIsValidPassword(true);
-    setIsValidEmail(true);
+
     if (confirmPassword !== password) {
       Alert.alert('Error', 'Passwords do not match');
       return;
@@ -71,42 +79,48 @@ const SignupScreen = ({navigation}) => {
     }
 
     if (username === '') {
-      Alert.alert(
-        'Username cannot be empty. If not empty, this username is yours.',
-      );
+      Alert.alert('Error', 'Username cannot be empty.');
       return;
     }
 
+    // If all validations pass, register the user
     register(email, password, username);
+  };
+
+  // Function to check if email already exists in Firestore
+  const checkEmailExists = async email => {
+    try {
+      const querySnapshot = await firestore()
+        .collection('users')
+        .where('email', '==', email)
+        .get();
+      return !querySnapshot.empty; // Returns true if email exists
+    } catch (error) {
+      console.error('Error checking email existence: ', error);
+      return false; // If an error occurs, assume the email does not exist
+    }
   };
 
   const getUsernames = async () => {
     try {
       const querySnapshot = await firestore().collection('users').get();
-
-      // Store usernames in the state
       const usernames = querySnapshot.docs.map(doc => doc.data().username);
       setAllUsernames(usernames);
-      console.log(usernames);
     } catch (error) {
       console.error('Error checking username availability: ', error);
     }
   };
 
   const handleUsernameChange = text => {
-    const trimmedUsername = text.trim(); // Trim the username to remove leading and trailing spaces
-    setUserName(trimmedUsername); // Set the trimmed username in the state
-    // Check if the entered username is available (case-insensitive comparison)
-    // Check if the entered username is available only if the username length is at least 3
+    const trimmedUsername = text.trim();
+    setUserName(trimmedUsername);
     if (trimmedUsername.length >= 3) {
       setUsernameAvailable(
         !allUsernames.includes(trimmedUsername.toLowerCase()),
       );
     } else {
-      setUsernameAvailable(undefined); // Reset availability status if the username is too short
+      setUsernameAvailable(undefined);
     }
-
-    // Check if the username length is at least 3 characters
     setIsUsernameValid(trimmedUsername.length >= 3);
   };
 
@@ -137,12 +151,13 @@ const SignupScreen = ({navigation}) => {
         {usernameAvailable === true && (
           <Text style={styles.availableText}>Username available</Text>
         )}
+
         <FormInput
           labelValue={email}
           onChangeText={userEmail => {
             setEmail(userEmail);
-            // Validate email on each change and update isValidEmail state
-            setIsValidEmail(validateEmail(userEmail));
+            const isValid = validateEmail(userEmail);
+            setIsValidEmail(isValid);
           }}
           placeholderText="Email"
           iconType="user"
@@ -151,29 +166,33 @@ const SignupScreen = ({navigation}) => {
           autoCorrect={false}
         />
         {!isValidEmail && (
-          <Text style={styles.errorText}>incorrect format of email</Text>
+          <Text style={styles.errorText}>Invalid email format</Text>
         )}
+
         <FormInput
           labelValue={password}
           onChangeText={userPassword => {
             setPassword(userPassword);
-            setIsValidPassword(validatePassword(password));
+            setIsValidPassword(validatePassword(userPassword));
           }}
           placeholderText="Password"
           iconType="lock"
           secureTextEntry={true}
         />
+
         <FormInput
           labelValue={confirmPassword}
           onChangeText={userPassword => {
             setConfirmPassword(userPassword);
-            setIsValidPassword(validatePassword(password));
+            setIsValidPassword(validatePassword(userPassword));
           }}
           placeholderText="Confirm Password"
           iconType="lock"
           secureTextEntry={true}
         />
-        <FormButton buttonTitle="Sign Up" onPress={() => handleRegister()} />
+
+        <FormButton buttonTitle="Sign Up" onPress={handleRegister} />
+
         <View style={styles.textPrivate}>
           <Text style={styles.color_textPrivate}>
             By registering, you confirm that you accept our{' '}
@@ -188,6 +207,7 @@ const SignupScreen = ({navigation}) => {
             Privacy Policy
           </Text>
         </View>
+
         <TouchableOpacity
           style={styles.navButton}
           onPress={() => navigation.navigate('Login')}>
@@ -202,13 +222,13 @@ export default SignupScreen;
 
 const styles = StyleSheet.create({
   scrollViewContainer: {
-    padding: 20, // Updated: Added padding for content spacing
-    alignItems: 'center', // Updated: Centering the content horizontally
-    justifyContent: 'center', // Updated: Centering the content vertically
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   innerContainer: {
-    width: '100%', // Updated: Allow full width for inner container
-    alignItems: 'center', // Updated: Center items within the inner container
+    width: '100%',
+    alignItems: 'center',
   },
   text: {
     fontFamily: 'Kufam-SemiBoldItalic',
